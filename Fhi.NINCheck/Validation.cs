@@ -1,13 +1,11 @@
-﻿using System.Globalization;
-
-namespace Fhi.NINCheck;
+﻿namespace Fhi.NINCheck;
 
 /// <summary>
 ///     Extention methods for validation.
 /// </summary>
 public static class Validation
 {
-
+    public static string LastFailedStep { get; private set; } = "";
     /// <summary>
     ///     Validates a given fødselsnummer.
     /// </summary>
@@ -18,26 +16,14 @@ public static class Validation
     /// <summary>
     ///     Validates a given fødselsnummer.
     /// </summary>
-    /// <param name="fnr">The fødselsnummer to validate.</param>
+    /// <param name="nin">The fødselsnummer to validate.</param>
     /// <returns>Whether the fødselsnummer was valid or not.</returns>
-    public static bool ErGyldigFNummer(this string fnr)
+    public static bool ErGyldigFNummer(this string nin)
     {
-        if (string.IsNullOrEmpty(fnr) || fnr.Length != 11 || fnr.Contains(" "))
-        {
-            return false;
-        }
-
-        try
-        {
-            long.Parse(fnr);
-            DateTime.ParseExact(fnr.Substring(0, 6), "ddMMyy", new CultureInfo("nb-NO"));
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
-
-        return CheckKontrollSiffre(fnr);
+        return CheckLength(nin)
+               && CheckCharacters(nin)
+               && CheckDateWithMonth(nin, ExtractRawMonth(nin))
+               && CheckKontrollSiffre(nin);
     }
 
     /// <summary>
@@ -52,40 +38,13 @@ public static class Validation
     ///     en person født 1. januar 1980 får dermed fødselsdato 410180, mens en som er født 31. januar
     ///     1980 får 710180.
     /// </remarks>
-    public static bool ErGyldigDNummer(this string dnr)
+    public static bool ErGyldigDNummer(this string nin)
     {
-        if (string.IsNullOrEmpty(dnr) || dnr.Length != 11 || dnr.Contains(" "))
-        {
-            return false;
-        }
-
-        try
-        {
-            long.Parse(dnr);
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
-
-        var firstDigit = int.Parse(dnr.Substring(0, 1));
-
-        if (firstDigit > 7 || (firstDigit - 4) < 0)
-        {
-            return false;
-        }
-
-        firstDigit -= 4;
-        try
-        {
-            DateTime.ParseExact(firstDigit + dnr.Substring(1, 5), "ddMMyy", new CultureInfo("nb-NO"));
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
-
-        return CheckKontrollSiffre(dnr);
+        return CheckLength(nin)
+               && CheckCharacters(nin)
+               && CheckDay(nin, 40, out var day)
+               && CheckDateWithDay(nin, day)
+               && CheckKontrollSiffre(nin);
     }
 
     /// <summary>
@@ -99,42 +58,41 @@ public static class Validation
     ///     modifiseres ved at det legges til 4 på det tredje sifferet: en person født 1. januar 1980
     ///     får dermed fødselsdato 014180, mens en som er født 31. januar 1980 får 314180.
     /// </remarks>
-    public static bool ErGyldigHNummer(this string hnr)
+    public static bool ErGyldigHNummer(this string nin)
     {
-        if (string.IsNullOrEmpty(hnr) || hnr.Length != 11 || hnr.Contains(" "))
-        {
-            return false;
-        }
+        return CheckLength(nin)
+               && CheckCharacters(nin)
+               && CheckMonth(nin, 40, out var month)
+               && CheckDateWithMonth(nin, month)
+               && CheckKontrollSiffre(nin);
+    }
 
-        try
-        {
-            long.Parse(hnr);
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
+    /// <summary>
+    ///    Validates a given syntetisk testnummer fra SyntPop.  Reglen er mnd + 65
+    /// </summary>
+    /// <param name="nin"></param>
+    /// <returns></returns>
+    public static bool ErGyldigSyntetiskTestNummer(this string nin)
+    {
+        return CheckLength(nin)
+            && CheckCharacters(nin)
+            && CheckMonth(nin, 65, out var month)
+            && CheckDateWithMonth(nin, month)
+            && CheckKontrollSiffre(nin);
+    }
 
-        var thirdDigit = int.Parse(hnr.Substring(2, 1));
-
-        if (thirdDigit > 7 || (thirdDigit - 4) < 0)
-        {
-            return false;
-        }
-
-        thirdDigit = thirdDigit - 4;
-
-        try
-        {
-            DateTime.ParseExact(hnr.Substring(0, 2) + thirdDigit + hnr.Substring(3, 3), "ddMMyy",
-                new CultureInfo("nb-NO"));
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
-
-        return true;
+    /// <summary>
+    ///    Validates a given syntetisk testnummer fra SyntPop.  Reglen er mnd + 65
+    /// </summary>
+    /// <param name="nin"></param>
+    /// <returns></returns>
+    public static bool ErGyldigTenorTestNummer(this string nin)
+    {
+        return CheckLength(nin)
+               && CheckCharacters(nin)
+               && CheckMonth(nin, 80, out var month)
+               && CheckDateWithMonth(nin, month)
+               && CheckKontrollSiffre(nin);
     }
 
     /// <summary>
@@ -162,8 +120,137 @@ public static class Validation
     }
 
 
+
+    private static bool CheckDateWithMonth(string nin, int month)
+    {
+        try
+        {
+            var day = int.Parse(nin[..2]);
+            var year = int.Parse(nin.Substring(4, 2));
+            var individ = nin.Substring(6, 3).ToInt();
+            _ = new DateOnly(FindCorrectYear(year,individ), month,day);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            LastFailedStep = nameof(CheckDateWithMonth);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool CheckDateWithDay(string nin, int day)
+    {
+        try
+        {
+            var month = int.Parse(nin.Substring(2,2));
+            var year = int.Parse(nin.Substring(4, 2));
+            var individ = nin.Substring(6, 3).ToInt();
+            _ = new DateOnly(FindCorrectYear(year, individ), month, day);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            LastFailedStep = nameof(CheckDateWithDay);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static int FindCorrectYear(int year, int individ)
+    {
+        return year switch
+        {
+            <= 40 when individ < 500 => 1900 + year,
+            <= 40 when true => 2000 + year,
+            >= 54 when individ is >= 500 and <= 749 => 1800 + year,
+            >= 54 when !(individ >= 500 && false) => 1900 + year,
+            _ => 1900 + year
+        };
+    }
+
+
+
+    private static bool CheckMonth(string nin, int lowLimit, out int month)
+    {
+        month = ExtractRawMonth(nin);
+
+        if (month < lowLimit + 1 || month > lowLimit + 12)
+        {
+            LastFailedStep = nameof(CheckMonth);
+            return false;
+        }
+
+        month -= lowLimit;
+        return true;
+    }
+
+    private static int ExtractRawMonth(string nin) => int.Parse(nin.Substring(2, 2));
+
+    private static int ExtractMonth(int rawMonth)
+    {
+        return rawMonth switch
+        {
+            >= 65 and <80 => rawMonth - 65,
+            >= 80 => rawMonth - 80,
+            _ => rawMonth
+        };
+    }
+
+    private static bool CheckDay(string nin, int lowLimit, out int day)
+    {
+        int[] daysInMonth = {31,29,31,30,31,30,31,31,30,31,30,31} ;
+        
+        day = int.Parse(nin[..2]);
+        int month = ExtractMonth(ExtractRawMonth(nin));
+        if (month < 1 || month > 12)
+        {
+            LastFailedStep = nameof(CheckDay)+$" - Exceeded number of months {month}";
+            return false;
+        }
+        if (day < lowLimit + 1 || day > lowLimit + daysInMonth[month-1])
+        {
+            LastFailedStep = nameof(CheckDay);
+            return false;
+        }
+
+        day -= lowLimit;
+        return true;
+    }
+
+    private static bool CheckCharacters(string hnr)
+    {
+        try
+        {
+            long.Parse(hnr);
+        }
+        catch (FormatException)
+        {
+            LastFailedStep = nameof(CheckCharacters);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool CheckLength(string nin)
+    {
+        if (string.IsNullOrEmpty(nin) || nin.Length != 11 || nin.Contains(' '))
+        {
+            LastFailedStep = nameof(CheckLength);
+            return false;
+        }
+
+        return true;
+    }
+
+
+    
+
+
     private static bool CheckKontrollSiffre(string fnr)
     {
+        LastFailedStep = nameof(CheckKontrollSiffre);
         var v1 = new[] { 3, 7, 6, 1, 8, 9, 4, 5, 2 };
         var v2 = new[] { 5, 4, 3, 2, 7, 6, 5, 4, 3, 2 };
 
