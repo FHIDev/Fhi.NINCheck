@@ -5,13 +5,30 @@
 /// </summary>
 public static class Validation
 {
+    /// <summary>
+    /// Last error message, indicating which step in the validation process failed.
+    /// </summary>
     public static string LastFailedStep { get; private set; } = "";
+
+    /// <summary>
+    /// Validerer et fødselsnummer om det er fnr eller dnr, og dersom det kjører i et testsystem, om det er et syntetisk testnummer fra SyntPop eller Tenor
+    /// </summary>
+    /// <param name="nin"></param>
+    /// <param name="isProduction">Default verdi true</param>
+    /// <returns></returns>
+    public static bool ErGyldigNin(this string nin,bool isProduction=true)
+    {
+        if (nin.ErGyldigFødselsNummer() || nin.ErGyldigDNummer()) return true;
+        if (isProduction) return false;
+        return nin.ErGyldigSyntetiskTestNummer() || nin.ErGyldigTenorTestNummer();
+    }
+    
     /// <summary>
     ///     Validates a given fødselsnummer.
     /// </summary>
-    /// <param name="fnr">The fødselsnummer to validate.</param>
+    /// <param name="nin">The fødselsnummer to validate.</param>
     /// <returns>Whether the fødselsnummer was valid or not.</returns>
-    public static bool ErGyldigFødselsNummer(this string fnr) => fnr.ErGyldigFNummer();
+    public static bool ErGyldigFødselsNummer(this string nin) => nin.ErGyldigFNummer();
 
     /// <summary>
     ///     Validates a given fødselsnummer.
@@ -50,8 +67,8 @@ public static class Validation
     /// <summary>
     ///     Validates a given h-nummer.
     /// </summary>
-    /// <param name="hnr">H-nummer to validate.</param>
-    /// <returns>Whther the h-nummer is valid or not.</returns>
+    /// <param name="nin">H-nummer to validate.</param>
+    /// <returns>Whether the h-nummer is valid or not.</returns>
     /// <remarks>
     ///     Et H-nummer er ellevesifret, som ordinære fødselsnummer, og består av en
     ///     modifisert sekssifret fødselsdato og et femsifret personnummer. Fødselsdatoen
@@ -63,8 +80,7 @@ public static class Validation
         return CheckLength(nin)
                && CheckCharacters(nin)
                && CheckMonth(nin, 40, out var month)
-               && CheckDateWithMonth(nin, month)
-               && CheckKontrollSiffre(nin);
+               && CheckDateWithMonth(nin, month);
     }
 
     /// <summary>
@@ -82,7 +98,7 @@ public static class Validation
     }
 
     /// <summary>
-    ///    Validates a given syntetisk testnummer fra SyntPop.  Reglen er mnd + 65
+    ///    Validates a given testnumber from Tenor.  Reglen er mnd + 80
     /// </summary>
     /// <param name="nin"></param>
     /// <returns></returns>
@@ -222,14 +238,13 @@ public static class Validation
     {
         try
         {
-            long.Parse(hnr);
+            _ = long.Parse(hnr);
         }
         catch (FormatException)
         {
             LastFailedStep = nameof(CheckCharacters);
             return false;
         }
-
         return true;
     }
 
