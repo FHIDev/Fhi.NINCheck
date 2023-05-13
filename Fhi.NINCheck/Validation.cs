@@ -18,7 +18,11 @@ public static class Validation
     /// <returns></returns>
     public static bool ErGyldigNin(this string nin,bool isProduction=true)
     {
-        if (nin.ErGyldigFødselsNummer() || nin.ErGyldigDNummer()) return true;
+        if (nin.ErGyldigFødselsNummer() 
+            || nin.ErGyldigDNummer() 
+            || nin.ErGyldigDufNummer()
+            )
+            return true;
         if (isProduction) return false;
         return nin.ErGyldigSyntetiskTestNummer() || nin.ErGyldigTenorTestNummer();
     }
@@ -122,18 +126,46 @@ public static class Validation
     /// <returns></returns>
     public static bool ErGyldigFHNummer(this string fhnr)
     {
-        if (string.IsNullOrEmpty(fhnr) || !(fhnr.Length == 11 && fhnr.IsNumeric()))
+        if (!CheckLength(fhnr) || !CheckCharacters(fhnr))
+            return false;
+        var fhNummer = fhnr[..9];
+        var nr = fhNummer.ToInt();
+        var harRiktigTallSerie = nr is >= 800000000 and <= 999999999;
+        if (!harRiktigTallSerie)
         {
+            LastFailedStep = "Ikke riktig tallserie";
             return false;
         }
-
-        var fhNummer = fhnr.Substring(0, 9);
-
-        var nr = fhNummer.ToInt();
-        var harRiktigTallSerie = 800000000 <= nr && nr <= 999999999;
-
-        return harRiktigTallSerie && CheckKontrollSiffre(fhnr);
+        return CheckKontrollSiffre(fhnr);
     }
+
+
+    /// <summary>
+    /// Validates a given DUF-nummer
+    /// Et Duf-nummer skal bestå av et 12-siffret tall.
+    /// Sifrene 0-3 er årstall, og resten er løpenummer
+    /// </summary>
+    /// <param name="nin"></param>
+    /// <remarks>
+    ///     
+    /// </remarks>
+    /// <returns></returns>
+    public static bool ErGyldigDufNummer(this string nin)
+    {
+        if (!CheckLength(nin,12) || !CheckCharacters(nin))
+            return false;
+        var yearString = nin[..4];
+        var year = yearString.ToInt();
+        bool goodYear = year >= 1854 && year <= DateTime.Now.Year;
+        if (!goodYear)
+        {
+            LastFailedStep = $"Ikke sannsynlig årstall: {year}";
+            return false;
+        }
+        return true;
+    }
+
+
 
 
 
@@ -203,6 +235,9 @@ public static class Validation
 
     private static int ExtractRawMonth(string nin) => int.Parse(nin.Substring(2, 2));
 
+    /// <summary>
+    /// Only use this when the month is not the be checked
+    /// </summary>
     private static int ExtractMonth(int rawMonth)
     {
         return rawMonth switch
@@ -248,21 +283,17 @@ public static class Validation
         return true;
     }
 
-    private static bool CheckLength(string nin)
+    private static bool CheckLength(string nin,int length=11)
     {
-        if (string.IsNullOrEmpty(nin) || nin.Length != 11 || nin.Contains(' '))
+        if (string.IsNullOrEmpty(nin) || nin.Length != length || nin.Contains(' '))
         {
-            LastFailedStep = nameof(CheckLength);
+            LastFailedStep = $"{nameof(CheckLength)}: Got {nin.Length}, expected {length}";
             return false;
         }
 
         return true;
     }
-
-
     
-
-
     private static bool CheckKontrollSiffre(string fnr)
     {
         LastFailedStep = nameof(CheckKontrollSiffre);
@@ -280,13 +311,13 @@ public static class Validation
         var r1 = s1 % 11;
         var k1 = 11 - r1;
 
-        if (k1 == 11)
+        switch (k1)
         {
-            k1 = 0;
-        }
-        else if (k1 == 10)
-        {
-            return false;
+            case 11:
+                k1 = 0;
+                break;
+            case 10:
+                return false;
         }
 
         for (var i = 0; i < 10; i++)
@@ -297,20 +328,43 @@ public static class Validation
         var r2 = s2 % 11;
         var k2 = 11 - r2;
 
-        if (k2 == 11)
+        switch (k2)
         {
-            k2 = 0;
+            case 11:
+                k2 = 0;
+                break;
+            case 10:
+                return false;
         }
-        else if (k2 == 10)
-        {
-            return false;
-        }
-
-        if ((Convert.ToInt16(fnr.Substring(9, 1)) == k1 && Convert.ToInt16(fnr.Substring(10, 1)) == k2))
-        {
-            return true;
-        }
-
-        return false;
+        bool isk1 = Convert.ToInt16(fnr.Substring(9, 1)) == k1;
+        bool isk2 = Convert.ToInt16(fnr.Substring(10, 1)) == k2;
+        return isk1 && isk2;
     }
+
+
+    /// <summary>
+    /// Returnerer hva slags nummer det kan være
+    /// </summary>
+    /// <param name="nin"></param>
+    /// <returns></returns>
+    public static string CheckNinType(this string nin)
+    {
+        if (nin.ErGyldigFNummer())
+            return "FNummer";
+        if (nin.ErGyldigDNummer())
+            return "DNummer";
+        if (nin.ErGyldigDufNummer())
+            return "DufNummer";
+        if (nin.ErGyldigTenorTestNummer())
+            return "TenorTestNummer";
+        if (nin.ErGyldigSyntetiskTestNummer())
+            return "SyntPopTestNummer";
+        if (nin.ErGyldigHNummer())
+            return "HNummer";
+        if (nin.ErGyldigFHNummer())
+            return "FHNummer";
+        return "Ukjent";
+
+    }
+
 }
