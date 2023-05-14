@@ -18,9 +18,11 @@ public static class Validation
     /// <returns></returns>
     public static bool ErGyldigNin(this string nin,bool isProduction=true)
     {
-        if (nin.ErGyldigFødselsNummer() 
+        if (nin.ErGyldigFNummer() 
             || nin.ErGyldigDNummer() 
             || nin.ErGyldigDufNummer()
+            || nin.ErGyldigHNummer()
+            || nin.ErGyldigFHNummer()
             )
             return true;
         if (isProduction) return false;
@@ -50,7 +52,7 @@ public static class Validation
     /// <summary>
     ///     Validates a given d-nummer.
     /// </summary>
-    /// <param name="dnr">D-nummer to validate.</param>
+    /// <param name="nin">D-nummer to validate.</param>
     /// <returns>Whether the provided d-nummer was valid or not</returns>
     /// <remarks>
     ///     Et D-nummer er ellevesifret, som ordinære fødselsnummer, og består av en
@@ -225,7 +227,7 @@ public static class Validation
 
         if (month < lowLimit + 1 || month > lowLimit + 12)
         {
-            LastFailedStep = nameof(CheckMonth);
+            LastFailedStep = $"{nameof(CheckMonth)}, month = {month}, lowlimit = {lowLimit}";
             return false;
         }
 

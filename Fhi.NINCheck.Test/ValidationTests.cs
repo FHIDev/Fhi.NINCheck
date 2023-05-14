@@ -41,7 +41,29 @@ internal class ValidationTests
     {
         Assert.That(nin.ErGyldigNin(true),Is.EqualTo(expected), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
     }
-    
+
+
+    [TestCase("130112345609")] // Duf
+    [TestCase("68156952442")] // Dnr
+    [TestCase("90090678378")]
+    [TestCase("67016464376")]
+    [TestCase("32739556891")] // Syntpop
+    [TestCase("28894698965")] // Tenor
+    [TestCase("00112835470")] // Fnr
+    [TestCase("01352078210")]
+    [TestCase("01104310009")]
+    public void Check_IsValidInTestForInvalidNumbers(string nin)
+    {
+        var result = nin.ErGyldigNin(false);
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result,Is.False, $"{nin.FormatWith()} skulle vært ugyldig, failed at {Validation.LastFailedStep}");
+    }
+
+
+
+
+
+
     [TestCase("17054026641")]
     [TestCase("22095314442")]
     [TestCase("17028338791")]
