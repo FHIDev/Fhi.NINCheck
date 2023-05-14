@@ -1,176 +1,210 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Fhi.NINCheck.Test;
 
-namespace Fhi.NINCheck.Test
+internal class ValidationTests
 {
-    internal class ValidationTests
+    [TestCase("12345678901", "Ukjent")]
+    [TestCase("200112345609","DufNummer")]
+    [TestCase("81212121223","FHNummer")]
+    [TestCase("17454026641","HNummer")]
+    [TestCase("28894698995","TenorTestNummer")] 
+    [TestCase("68126952442", "DNummer")]
+    [TestCase("31739556891", "SyntPopTestNummer")]
+    public void CheckTypeOfNumber(string nin, string expected)
     {
-        #region Test data - generated numbers to exercise the entire validation logic
+        Assert.That(nin.CheckNinType(), Is.EqualTo(expected));
+    }
+
+    [TestCase("200112345609")] // Duf
+    [TestCase("68126952442")] // Dnr
+    [TestCase("70090678378")]
+    [TestCase("67016464373")]
+    [TestCase("31739556891")] // Syntpop
+    [TestCase("28894698995")] // Tenor
+    [TestCase("01112835470")] // Fnr
+    [TestCase("01032078210")]
+    [TestCase("01104343909")]
+    public void Check_IsValidInTest(string nin)
+    {
+        Assert.That(nin.ErGyldigNin(false), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+    }
+
+    [TestCase("200112345609",true)] // Duf
+    [TestCase("68126952442",true)] // Dnr
+    [TestCase("70090678378", true)]
+    [TestCase("67016464373", true)]
+    [TestCase("31739556891", false)] // Syntpop
+    [TestCase("28894698995",false)] // Tenor
+    [TestCase("01112835470", true)] // Fnr
+    [TestCase("01032078210", true)]
+    [TestCase("01104343909", true)]
+    public void Check_IsValidInProduction(string nin,bool expected)
+    {
+        Assert.That(nin.ErGyldigNin(true),Is.EqualTo(expected), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+    }
+
+
+    [TestCase("130112345609")] // Duf
+    [TestCase("68156952442")] // Dnr
+    [TestCase("90090678378")]
+    [TestCase("67016464376")]
+    [TestCase("32739556891")] // Syntpop
+    [TestCase("28894698965")] // Tenor
+    [TestCase("00112835470")] // Fnr
+    [TestCase("01352078210")]
+    [TestCase("01104310009")]
+    public void Check_IsValidInTestForInvalidNumbers(string nin)
+    {
+        var result = nin.ErGyldigNin(false);
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result,Is.False, $"{nin.FormatWith()} skulle vært ugyldig, failed at {Validation.LastFailedStep}");
+    }
 
 
 
-        private readonly List<string> validFnrs = new List<string>()
+
+
+
+    [TestCase("17054026641")]
+    [TestCase("22095314442")]
+    [TestCase("17028338791")]
+    [TestCase("18081388020")]
+    [TestCase("01112835470")]
+    [TestCase("01032078210")]
+    [TestCase("01104343909")]
+    public void Can_validate_a_fnummer(string fnr)
+    {
+        Assert.Multiple(() =>
         {
-            "17054026641",
-            "22095314442",
-            "17028338791",
-            "18081388020",
-            "01112835470",
-            "01032078210",
-            "01104343909",
-        };
+            Assert.That(fnr.ErGyldigFødselsNummer(),
+                $"{fnr.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+            Assert.That(fnr.ErGyldigFNummer(),
+                $"{fnr.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+        });
+    }
 
-        private readonly List<string> validDnrs = new List<string>()
-        {
-            "51106297510",
-            "45092528433",
-            "68126952442",
-            "70090678378",
-            "67016464373",
-        };
+    [TestCase("28894698995")]
+    public void Can_validate_a_Tenornummer(string nin)
+    {
+        Assert.That(nin.ErGyldigTenorTestNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+    }
 
-        private readonly List<string> validHnrs = new List<string>()
-        {
-            "17454026641",
-            "22495314442",
-            "17428338791",
-            "18481388020",
-            "01512835470",
-        };
+    [TestCase("31739556891")]
+    public void Is_Invalid_Tenornummer(string nin)
+    {
+        var result = nin.ErGyldigTenorTestNummer();
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+    }
 
-        private readonly List<string> validFHnrs = new List<string>()
-        {
-            "81212121223",
-            "94545456561",
-        };
+    [TestCase("31739556891")]
+    public void Can_validate_a_SyntPopTestNumber(string nin)
+    {
+        Assert.That(nin.ErGyldigSyntetiskTestNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+    }
 
-
-        private readonly List<string> validDUFnrs = new List<string>()
-        {
-            "200112345609",
-            "201017238203",
-            "200816832910",
-        };
+    [TestCase("28894698995")]
+    public void Is_Invalid_SyntPopnummer(string nin)
+    {
+        var result = nin.ErGyldigSyntetiskTestNummer();
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+    }
 
 
-        private readonly List<string> invalidFnrs = new List<string>()
-        {
-            "97054026641",
-            "z7054026641",
-            "18081388093",
-            "01112835480",
-            "01032078270",
-            "11111111100",
-        };
 
-        private readonly List<string> invalidDnrs = new List<string>()
-        {
-            "91106297510",
-            "21106297510",
-            "45992528433",
-            "z1106297510",
-        };
+    [TestCase("97054026641")]
+    [TestCase("z7054026641")]
+    [TestCase("18081388093")]
+    [TestCase("01112835480")]
+    [TestCase("01032078270")]
+    [TestCase("11111111100")]
+    public void Can_find_invalid_fnumbers(string nin)
+    {
+        var result = nin.ErGyldigFødselsNummer();
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+    }
 
-        private readonly List<string> invalidHnrs = new List<string>()
-        {
-            "97454026641",
-            "18981388020",
-            "18181388020",
-            "98481388020",
-            "z7454026641",
-        };
+    [TestCase("51106297510")]
+    [TestCase("45092528433")]
+    [TestCase("68126952442")]
+    [TestCase("70090678378")]
+    [TestCase("67016464373")]
+    public void Can_validate_a_dnummer(string nin)
+    {
+        Assert.That(nin.ErGyldigDNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+    }
+    [TestCase("91106297510")]
+    [TestCase("21106297510")]
+    [TestCase("45992528433")]
+    [TestCase("z1106297510")]
+    public void Can_find_invalid_dnumbers(string nin)
+    {
+        var result = nin.ErGyldigDNummer();
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+    }
 
-        private readonly List<string> invalidFHnrs = new List<string>()
-        {
-            "71212121229",
-            "",
-            "1898z388020",
-        };
+    [TestCase("17454026641")]
+    [TestCase("22495314442")]
+    [TestCase("17428338791")]
+    [TestCase("18481388020")]
+    [TestCase("01512835470")]
+    public void Can_validate_a_hnummer(string nin)
+    {
+        Assert.That(nin.ErGyldigHNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+    }
 
-
-       
-
-        #endregion
-
-        public void can_validate_a_fnummer()
-        {
-            validFnrs.ForEach(fnr =>
-                Assert.That(fnr.ErGyldigFødselsNummer(),
-                    "{0} var ugyldig".FormatWith(fnr))
-            );
-
-            validFnrs.ForEach(fnr =>
-                Assert.That(fnr.ErGyldigFNummer(),
-                    "{0} var ugyldig".FormatWith(fnr))
-            );
-        }
-
-
-        [Test]
-        public void can_find_invalid_fnumbers()
-        {
-            invalidFnrs.ForEach(fnr =>
-                Assert.That(fnr.ErGyldigFødselsNummer(), Is.False,
-                    "{0} skal ikke være gyldig".FormatWith(fnr))
-            );
-        }
-
-        [Test]
-        public void can_validate_a_dnummer()
-        {
-            validDnrs.ForEach(dnr =>
-                Assert.That(dnr.ErGyldigDNummer(),
-                    "{0} var ugyldig".FormatWith(dnr))
-            );
-        }
-
-        [Test]
-        public void can_find_invalid_dnumbers()
-        {
-            invalidDnrs.ForEach(dnr =>
-                Assert.That(dnr.ErGyldigDNummer(), Is.False,
-                    "{0} skal ikke være gyldig".FormatWith(dnr))
-            );
-        }
-
-        [Test]
-        public void can_validate_a_hnummer()
-        {
-            validHnrs.ForEach(hnr =>
-                Assert.That(hnr.ErGyldigHNummer(),
-                    "{0} var ugyldig".FormatWith(hnr))
-            );
-        }
-
-        [Test]
-        public void can_find_invalid_hnumbers()
-        {
-            invalidHnrs.ForEach(hnr =>
-                Assert.That(hnr.ErGyldigHNummer(), Is.False,
-                    "{0} skal ikke være gyldig".FormatWith(hnr))
-            );
-        }
-
-        [Test]
-        public void can_validate_a_fhnummer()
-        {
-            validFHnrs.ForEach(fhnr =>
-                Assert.That(fhnr.ErGyldigFHNummer(),
-                    "{0} var ugyldig".FormatWith(fhnr))
-            );
-        }
-
-        [Test]
-        public void can_find_invalid_fhnumbers()
-        {
-            invalidFHnrs.ForEach(fhnr =>
-                Assert.That(fhnr.ErGyldigFHNummer(), Is.False,
-                    "{0} skal ikke være gyldig".FormatWith(fhnr))
-            );
-        }
+    [TestCase("97454026641")]
+    [TestCase("18981388020")]
+    [TestCase("18181388020")]
+    [TestCase("98481388020")]
+    [TestCase("z7454026641")]
+    public void Can_find_invalid_hnumbers(string nin)
+    {
+        var result = nin.ErGyldigHNummer();
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
 
     }
+
+    [TestCase("81212121223")]
+    [TestCase("94545456561")]
+    public void Can_validate_a_fhnummer(string nin)
+    {
+        Assert.That(nin.ErGyldigFHNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+
+    }
+    [TestCase("71212121229")]
+    [TestCase("")]
+    [TestCase("1898z388020")]
+    public void Can_find_invalid_fhnumbers(string nin)
+    {
+        var result = nin.ErGyldigFHNummer();
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+    }
+
+    [TestCase("200112345609")]
+    [TestCase("201017238203")]
+    [TestCase("200816832910")]
+    public void Can_validate_a_dufnummer(string nin)
+    {
+        Assert.That(nin.ErGyldigDufNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+    }
+
+    [TestCase("71212121229")]
+    [TestCase("")]
+    [TestCase("1898z388020")]
+    [TestCase("123411234560")]
+    public void Can_find_invalid_dufnumbers(string nin)
+    {
+        var result = nin.ErGyldigDufNummer();
+        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+    }
+
+
+
+
 }
