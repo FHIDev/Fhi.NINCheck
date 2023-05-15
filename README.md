@@ -7,7 +7,7 @@ Bibliotek for å sjekke gyldighet av Fnr, Dnr, HNr,FHN,Duf samt i test environme
 ```csharp
 using Fhi.NinCheck;
 
-var nin = new Nin("some 11 digit nin number");
+var nin = new Nin("some 11 digit nin number (12 for Duf)");
 if (nin.ErGyldigNin())
 {
     // Do something
