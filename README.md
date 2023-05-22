@@ -7,7 +7,7 @@ Bibliotek for å sjekke gyldighet av Fnr, Dnr, HNr,FHN,Duf samt i test environme
 ```csharp
 using Fhi.NinCheck;
 
-var nin = new Nin("some 11 digit nin number (12 for Duf)");
+string nin = "some 11 digit nin number (12 for Duf)";
 if (nin.ErGyldigNin())
 {
     // Do something
@@ -20,7 +20,7 @@ Default er true, altså produksjonsmiljø.
 ```csharp
 using Fhi.NinCheck;
 
-var nin = new Nin("some 11 digit nin number");
+string nin = "some 11 digit nin number (12 for Duf)";
 bool isTestEnvironment = !Environment.IsProduction;
 if (nin.ErGyldigNin(isTestEnvironment))
 {
