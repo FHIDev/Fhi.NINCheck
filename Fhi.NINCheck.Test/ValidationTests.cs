@@ -2,6 +2,7 @@
 
 internal class ValidationTests
 {
+    [TestCase("55076500565", "Ukjent")]
     [TestCase("12345678901", "Ukjent")]
     [TestCase("01112835470", "FNummer")]
     [TestCase("200112345609","DufNummer")]
@@ -12,6 +13,7 @@ internal class ValidationTests
     [TestCase("31739556891", "SyntPopTestNummer,FNummer")]
     public void CheckTypeOfNumber(string nin, string expected)
     {
+        TestContext.WriteLine($"Testing {nin}, is type : {nin.CheckNinType()}, FeilInfo {Fhi.NINCheck.Validation.LastFailedStep}");
         Assert.That(nin.CheckNinType(), Is.EqualTo(expected));
     }
 

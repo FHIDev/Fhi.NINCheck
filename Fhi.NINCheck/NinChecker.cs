@@ -11,10 +11,10 @@ public class NinChecker
     private int month;
     int year;
     public int RealYear { get; }
-    private int realDay => isDayDnrModified ? day - DnrDayOffset : day;
-    private int realMonth => month - MonthModifier;
-    private bool isDayDnrModified;
-    private bool isMonthModified => MonthModifier != 0;
+    public int RealDay => IsDayDnrModified ? day - DnrDayOffset : day;
+    public int RealMonth => month - MonthModifier;
+    public bool IsDayDnrModified { get; private set; }
+    public bool IsMonthModified => MonthModifier != 0;
 
     /// <summary>
     /// Verifies that the number is technically valid. Length and characters.
@@ -31,7 +31,7 @@ public class NinChecker
     private const int TenorMonthOffset = 80;
     private const int SyntPopMonthOffset = 65;
 
-    private bool IsValidDate => IsValidDay && IsValidMonth && IsValidYear;
+    public bool IsValidDate => IsValidDay && IsValidMonth && IsValidYear;
     public bool IsValidYear => RealYear > 1854 && RealYear <= DateTime.Now.Year;
     
 
@@ -43,7 +43,7 @@ public class NinChecker
 
     public bool IsFNummer => IsValidFnrDnr && !IsDNummer && !IsHNummer && !IsDufNumber && IsValidDate;
 
-    private bool IsValidDay =>
+    public bool IsValidDay =>
         day switch
         {
             > 0 and < 32 => true,
@@ -51,9 +51,9 @@ public class NinChecker
             _ => false
         };
 
-    private bool IsValidKontrollSiffre => this.CheckKontrollSiffre();
+    public bool IsValidKontrollSiffre => CheckKontrollSiffre();
 
-    private bool IsValidMonth => MonthModifier != -1;
+    public bool IsValidMonth => MonthModifier != -1;
 
     private int MonthModifier =>
         month switch
@@ -80,16 +80,15 @@ public class NinChecker
         }
     }
 
-    private bool Parse()
+    private void Parse()
     {
         day = Nin[..2].ToInt();
         month = Nin[2..4].ToInt();
         year = Nin[4..6].ToInt();
-        isDayDnrModified = day > 40;
-        return true;
+        IsDayDnrModified = day > 40;
     }
 
-    private bool CheckLength()
+    public bool CheckLength()
     {
         if (string.IsNullOrEmpty(Nin) || (Nin.Length != 11 && Nin.Length != 12) || Nin.Contains(' '))
         {
@@ -100,7 +99,7 @@ public class NinChecker
         return true;
     }
 
-    private bool CheckCharacters()
+    public bool CheckCharacters()
     {
         try
         {
