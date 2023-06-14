@@ -1,4 +1,6 @@
-﻿namespace Fhi.NINCheck;
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace Fhi.NINCheck;
 
 /// <summary>
 ///     Extention methods for validation.
@@ -18,6 +20,11 @@ public static class Validation
     /// <returns></returns>
     public static bool ErGyldigNin(this string nin,bool isProduction=true)
     {
+        if (isProduction)
+        {
+            if (nin.ErGyldigSyntetiskTestNummer() || nin.ErGyldigTenorTestNummer())
+                return false;
+        }
         if (nin.ErGyldigFNummer() 
             || nin.ErGyldigDNummer() 
             || nin.ErGyldigDufNummer()
@@ -43,11 +50,19 @@ public static class Validation
     /// <returns>Whether the fødselsnummer was valid or not.</returns>
     public static bool ErGyldigFNummer(this string nin)
     {
-        return CheckLength(nin)
-               && CheckCharacters(nin)
-               && CheckDateWithMonth(nin, ExtractRawMonth(nin))
-               && CheckKontrollSiffre(nin);
+        var checker = new NinChecker(nin);
+        if (!checker.IsTechValid)
+        {
+            LastFailedStep = checker.ErrorMessage;
+            return false;
+        }
+
+        return checker.IsFNummer;
     }
+
+
+   
+    private const int DnrDayOffset = 40;
 
     /// <summary>
     ///     Validates a given d-nummer.
@@ -63,11 +78,14 @@ public static class Validation
     /// </remarks>
     public static bool ErGyldigDNummer(this string nin)
     {
-        return CheckLength(nin)
-               && CheckCharacters(nin)
-               && CheckDay(nin, 40, out var day)
-               && CheckDateWithDay(nin, day)
-               && CheckKontrollSiffre(nin);
+        var checker = new NinChecker(nin);
+        if (!checker.IsTechValid)
+        {
+            LastFailedStep = checker.ErrorMessage;
+            return false;
+        }
+
+        return checker.IsDNummer;
     }
 
     /// <summary>
@@ -83,10 +101,14 @@ public static class Validation
     /// </remarks>
     public static bool ErGyldigHNummer(this string nin)
     {
-        return CheckLength(nin)
-               && CheckCharacters(nin)
-               && CheckMonth(nin, 40, out var month)
-               && CheckDateWithMonth(nin, month);
+        var checker = new NinChecker(nin);
+        if (!checker.IsTechValid)
+        {
+            LastFailedStep = checker.ErrorMessage;
+            return false;
+        }
+
+        return checker.IsHNummer;
     }
 
     /// <summary>
@@ -96,11 +118,14 @@ public static class Validation
     /// <returns></returns>
     public static bool ErGyldigSyntetiskTestNummer(this string nin)
     {
-        return CheckLength(nin)
-            && CheckCharacters(nin)
-            && CheckMonth(nin, 65, out var month)
-            && CheckDateWithMonth(nin, month)
-            && CheckKontrollSiffre(nin);
+        var checker = new NinChecker(nin);
+        if (!checker.IsTechValid)
+        {
+            LastFailedStep = checker.ErrorMessage;
+            return false;
+        }
+
+        return checker.IsSyntPopNummer;
     }
 
     /// <summary>
@@ -110,11 +135,14 @@ public static class Validation
     /// <returns></returns>
     public static bool ErGyldigTenorTestNummer(this string nin)
     {
-        return CheckLength(nin)
-               && CheckCharacters(nin)
-               && CheckMonth(nin, 80, out var month)
-               && CheckDateWithMonth(nin, month)
-               && CheckKontrollSiffre(nin);
+        var checker = new NinChecker(nin);
+        if (!checker.IsTechValid)
+        {
+            LastFailedStep = checker.ErrorMessage;
+            return false;
+        }
+
+        return checker.IsTenorNummer;
     }
 
     /// <summary>
@@ -154,85 +182,14 @@ public static class Validation
     /// <returns></returns>
     public static bool ErGyldigDufNummer(this string nin)
     {
-        if (!CheckLength(nin,12) || !CheckCharacters(nin))
-            return false;
-        var yearString = nin[..4];
-        var year = yearString.ToInt();
-        bool goodYear = year >= 1854 && year <= DateTime.Now.Year;
-        if (!goodYear)
+        var checker = new NinChecker(nin);
+        if (!checker.IsTechValid)
         {
-            LastFailedStep = $"Ikke sannsynlig årstall: {year}";
-            return false;
-        }
-        return true;
-    }
-
-
-
-
-
-    private static bool CheckDateWithMonth(string nin, int month)
-    {
-        try
-        {
-            var day = int.Parse(nin[..2]);
-            var year = int.Parse(nin.Substring(4, 2));
-            var individ = nin.Substring(6, 3).ToInt();
-            _ = new DateOnly(FindCorrectYear(year,individ), month,day);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            LastFailedStep = nameof(CheckDateWithMonth);
+            LastFailedStep = checker.ErrorMessage;
             return false;
         }
 
-        return true;
-    }
-
-    private static bool CheckDateWithDay(string nin, int day)
-    {
-        try
-        {
-            var month = int.Parse(nin.Substring(2,2));
-            var year = int.Parse(nin.Substring(4, 2));
-            var individ = nin.Substring(6, 3).ToInt();
-            _ = new DateOnly(FindCorrectYear(year, individ), month, day);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            LastFailedStep = nameof(CheckDateWithDay);
-            return false;
-        }
-
-        return true;
-    }
-
-    private static int FindCorrectYear(int year, int individ)
-    {
-        return year switch
-        {
-            <= 40 when individ < 500 => 1900 + year,
-            <= 40 when true => 2000 + year,
-            >= 54 when individ is >= 500 and <= 749 => 1800 + year,
-            >= 54 when !(individ >= 500 && false) => 1900 + year,
-            _ => 1900 + year
-        };
-    }
-
-
-
-    private static bool CheckMonth(string nin, int lowLimit, out int month)
-    {
-        month = ExtractRawMonth(nin);
-
-        if (month < lowLimit + 1 || month > lowLimit + 12)
-        {
-            LastFailedStep = $"{nameof(CheckMonth)}, month = {month}, lowlimit = {lowLimit}";
-            return false;
-        }
-
-        month -= lowLimit;
-        return true;
+        return checker.IsDufNumber;
     }
 
     private static int ExtractRawMonth(string nin) => int.Parse(nin.Substring(2, 2));
@@ -250,28 +207,7 @@ public static class Validation
         };
     }
 
-    private static bool CheckDay(string nin, int lowLimit, out int day)
-    {
-        int[] daysInMonth = {31,29,31,30,31,30,31,31,30,31,30,31} ;
-        
-        day = int.Parse(nin[..2]);
-        int month = ExtractMonth(ExtractRawMonth(nin));
-        if (month < 1 || month > 12)
-        {
-            LastFailedStep = nameof(CheckDay)+$" - Exceeded number of months {month}";
-            return false;
-        }
-        if (day < lowLimit + 1 || day > lowLimit + daysInMonth[month-1])
-        {
-            LastFailedStep = nameof(CheckDay);
-            return false;
-        }
-
-        day -= lowLimit;
-        return true;
-    }
-
-    private static bool CheckCharacters(string hnr)
+   private static bool CheckCharacters(string hnr)
     {
         try
         {
@@ -351,21 +287,27 @@ public static class Validation
     /// <returns></returns>
     public static string CheckNinType(this string nin)
     {
-        if (nin.ErGyldigFNummer())
-            return "FNummer";
-        if (nin.ErGyldigDNummer())
-            return "DNummer";
-        if (nin.ErGyldigDufNummer())
-            return "DufNummer";
-        if (nin.ErGyldigTenorTestNummer())
-            return "TenorTestNummer";
-        if (nin.ErGyldigSyntetiskTestNummer())
-            return "SyntPopTestNummer";
-        if (nin.ErGyldigHNummer())
-            return "HNummer";
-        if (nin.ErGyldigFHNummer())
-            return "FHNummer";
-        return "Ukjent";
+        var basetype = nin.ErGyldigFNummer() ? "FNummer"
+            : nin.ErGyldigDNummer() ? "DNummer"
+            : "";
+        if (basetype == "")
+        {
+            if (nin.ErGyldigDufNummer())
+                return "DufNummer";
+            if (nin.ErGyldigHNummer())
+                return "HNummer";
+            if (nin.ErGyldigFHNummer())
+                return "FHNummer";
+        }
+        var testtype = nin.ErGyldigTenorTestNummer() ? "TenorTestNummer"
+            : nin.ErGyldigSyntetiskTestNummer() ? "SyntPopTestNummer"
+            : "";
+            
+        if (basetype == "" && testtype == "")
+            return "Ukjent";
+        if (testtype != "" && basetype == "")
+            return $"Ulovlig testnummer, kun {testtype}";
+        return testtype == "" ? basetype : $"{testtype},{basetype}";
 
     }
 

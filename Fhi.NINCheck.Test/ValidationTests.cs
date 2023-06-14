@@ -2,15 +2,18 @@
 
 internal class ValidationTests
 {
+    [TestCase("55076500565", "Ukjent")]
     [TestCase("12345678901", "Ukjent")]
+    [TestCase("01112835470", "FNummer")]
     [TestCase("200112345609","DufNummer")]
     [TestCase("81212121223","FHNummer")]
     [TestCase("17454026641","HNummer")]
-    [TestCase("28894698995","TenorTestNummer")] 
+    [TestCase("28894698995","TenorTestNummer,FNummer")] 
     [TestCase("68126952442", "DNummer")]
-    [TestCase("31739556891", "SyntPopTestNummer")]
+    [TestCase("31739556891", "SyntPopTestNummer,FNummer")]
     public void CheckTypeOfNumber(string nin, string expected)
     {
+        TestContext.WriteLine($"Testing {nin}, is type : {nin.CheckNinType()}, FeilInfo {Fhi.NINCheck.Validation.LastFailedStep}");
         Assert.That(nin.CheckNinType(), Is.EqualTo(expected));
     }
 
@@ -95,7 +98,7 @@ internal class ValidationTests
         TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
-
+    [TestCase("44722264549")]
     [TestCase("31739556891")]
     public void Can_validate_a_SyntPopTestNumber(string nin)
     {
