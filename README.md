@@ -45,7 +45,7 @@ nin.ErGyldigTenorTestNummer();
 nin.ErGyldigSyntetiskTestNummer();
 ```
 
-*Noter:  For DufNummer er gyldighetsalgoritmen konfidensiell, så denne løsningen gir kun en antatt vurdering. Dersom den sier at nummerert ikke er gyldig, er det korrekt, men om den sier nummeret er gyldig skal det tolkes som sannsynligvis korrekt.  Vi kan ikke vite dette absolutt. *
+* Noter:  For DufNummer er gyldighetsalgoritmen konfidensiell, så denne løsningen gir kun en antatt vurdering. Dersom den sier at nummerert ikke er gyldig, er det korrekt, men om den sier nummeret er gyldig skal det tolkes som sannsynligvis korrekt.  Vi kan ikke vite dette absolutt. *
 
 ## Egne kombinerte sjekker
 
