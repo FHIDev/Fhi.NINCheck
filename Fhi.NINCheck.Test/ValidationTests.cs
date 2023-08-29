@@ -84,13 +84,15 @@ internal class ValidationTests
                 $"{fnr.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
         });
     }
-
+    
+    [TestCase("03923248608")]
     [TestCase("28894698995")]
     public void Can_validate_a_Tenornummer(string nin)
     {
         Assert.That(nin.ErGyldigTenorTestNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
     }
 
+    
     [TestCase("31739556891")]
     public void Is_Invalid_Tenornummer(string nin)
     {
@@ -207,6 +209,14 @@ internal class ValidationTests
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
 
+    [TestCase("03923248608")]
+    public void CheckElementsOfNumber(string fnr)
+    {
+        var c = new NinChecker(fnr);
+        TestContext.WriteLine($" TechValid {c.IsTechValid}");
+        TestContext.WriteLine($" Fnr {c.IsFNummer}");
+        TestContext.WriteLine($" Dnr {c.IsDNummer}");
+    }
 
 
 

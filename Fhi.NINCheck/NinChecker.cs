@@ -36,10 +36,10 @@ public class NinChecker
     
 
     public bool IsDNummer => IsValidFnrDnr && IsValidDate && day > DnrDayOffset;
-    public bool IsHNummer => IsTechValid && IsValidDate && month is > HnrMonthOffset and < HnrMonthOffset + 12;
-    public bool IsSyntPopNummer => IsValidFnrDnr && IsValidDate && month is > SyntPopMonthOffset and < SyntPopMonthOffset + 12;
+    public bool IsHNummer => IsTechValid && IsValidDate && month is > HnrMonthOffset and <= HnrMonthOffset + 12;
+    public bool IsSyntPopNummer => IsValidFnrDnr && IsValidDate && month is > SyntPopMonthOffset and <= SyntPopMonthOffset + 12;
 
-    public bool IsTenorNummer => IsValidFnrDnr && IsValidDate && month is > TenorMonthOffset and < TenorMonthOffset + 12;
+    public bool IsTenorNummer => IsValidFnrDnr && IsValidDate && month is > TenorMonthOffset and <= TenorMonthOffset + 12;
 
     public bool IsFNummer => IsValidFnrDnr && !IsDNummer && !IsHNummer && !IsDufNumber && IsValidDate;
 
@@ -59,9 +59,9 @@ public class NinChecker
         month switch
         {
             > 0 and < 13 => 0,
-            > HnrMonthOffset and < HnrMonthOffset + 12 => HnrMonthOffset,
-            > SyntPopMonthOffset and < SyntPopMonthOffset + 12 => SyntPopMonthOffset,
-            > TenorMonthOffset and < TenorMonthOffset + 12 => TenorMonthOffset,
+            > HnrMonthOffset and <= HnrMonthOffset + 12 => HnrMonthOffset,
+            > SyntPopMonthOffset and <= SyntPopMonthOffset + 12 => SyntPopMonthOffset,
+            > TenorMonthOffset and <= TenorMonthOffset + 12 => TenorMonthOffset,
             _ => -1
         };
 
