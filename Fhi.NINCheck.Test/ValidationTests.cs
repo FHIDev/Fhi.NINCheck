@@ -190,12 +190,17 @@ internal class ValidationTests
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
 
+    [TestCase("199201426900")]
     [TestCase("200112345609")]
     [TestCase("201017238203")]
     [TestCase("200816832910")]
     public void Can_validate_a_dufnummer(string nin)
     {
         Assert.That(nin.ErGyldigDufNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+        int year = nin.Substring(0, 4).ToInt();
+        var ninchecker = new NinChecker(nin);
+        Assert.That(ninchecker.RealYear, Is.EqualTo(year));
+
     }
 
     [TestCase("71212121229")]

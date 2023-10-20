@@ -118,6 +118,10 @@ public class NinChecker
 
     private int FindCorrectYear()
     {
+        if (IsDufNumber)
+        {
+            return DufYearCheck() ? Nin.Substring(0, 4).ToInt() : 0;
+        }
         var individ = Nin.Substring(6, 3).ToInt();
         return year switch
         {
