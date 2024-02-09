@@ -165,6 +165,7 @@ internal class ValidationTests
     [TestCase("18181388020")]
     [TestCase("98481388020")]
     [TestCase("z7454026641")]
+    [TestCase("204167553610")]
     public void Can_find_invalid_hnumbers(string nin)
     {
         var result = nin.ErGyldigHNummer();
@@ -194,10 +195,11 @@ internal class ValidationTests
     [TestCase("200112345609")]
     [TestCase("201017238203")]
     [TestCase("200816832910")]
+    
     public void Can_validate_a_dufnummer(string nin)
     {
         Assert.That(nin.ErGyldigDufNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
-        int year = nin.Substring(0, 4).ToInt();
+        int year = nin[..4].ToInt();
         var ninchecker = new NinChecker(nin);
         Assert.That(ninchecker.RealYear, Is.EqualTo(year));
 
@@ -207,6 +209,8 @@ internal class ValidationTests
     [TestCase("")]
     [TestCase("1898z388020")]
     [TestCase("123411234560")]
+    [TestCase("204167553610")]
+    [TestCase("500266228604")]
     public void Can_find_invalid_dufnumbers(string nin)
     {
         var result = nin.ErGyldigDufNummer();
