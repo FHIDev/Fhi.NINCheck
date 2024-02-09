@@ -26,6 +26,8 @@ public class NinChecker
 
     public bool IsDufNumber => Nin.Length == 12 && DufYearCheck();
 
+    public bool IsPotentialDufNumber => Nin.Length == 12;
+
     private const int DnrDayOffset = 40;
     private const int HnrMonthOffset = 40;
     private const int TenorMonthOffset = 80;
@@ -118,7 +120,7 @@ public class NinChecker
 
     private int FindCorrectYear()
     {
-        if (IsDufNumber)
+        if (IsPotentialDufNumber)
         {
             return DufYearCheck() ? Nin.Substring(0, 4).ToInt() : 0;
         }
@@ -138,7 +140,8 @@ public class NinChecker
         bool goodYear = dufyear >= 1854 && dufyear <= DateTime.Now.Year;
         if (!goodYear)
         {
-            ErrorMessage = $"Ikke sannsynlig årstall: {year}";
+            ErrorMessage = $"Ikke sannsynlig årstall: {dufyear}";
+            IsTechValid = false;
             return false;
         }
         return true;
