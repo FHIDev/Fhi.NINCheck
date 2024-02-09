@@ -16,8 +16,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github", "github", "{9497F951-27B5-46ED-A576-7B9C8CBA0372}"
 	ProjectSection(SolutionItems) = preProject
 		.github\dependabot.yml = .github\dependabot.yml
-		Fhi.NINCheck.CI = Fhi.NINCheck.CI
-		Fhi.NINCheck.Nuget.yml = Fhi.NINCheck.Nuget.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{B6D85225-62AC-4F0C-9CD1-D55FC34A359C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\Fhi.NINCheck.CI.yml = .github\workflows\Fhi.NINCheck.CI.yml
+		.github\workflows\Fhi.NINCheck.Nuget.yml = .github\workflows\Fhi.NINCheck.Nuget.yml
 	EndProjectSection
 EndProject
 Global
@@ -40,6 +44,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9497F951-27B5-46ED-A576-7B9C8CBA0372} = {8E2426B4-500C-4B63-8C07-C0523C66A9D4}
+		{B6D85225-62AC-4F0C-9CD1-D55FC34A359C} = {9497F951-27B5-46ED-A576-7B9C8CBA0372}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4E36FDA5-E809-4F2D-8997-9667AEEC4D8D}
