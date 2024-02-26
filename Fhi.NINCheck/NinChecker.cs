@@ -84,9 +84,9 @@ public class NinChecker
 
     private void Parse()
     {
-        day = Nin[..2].ToInt();
-        month = Nin[2..4].ToInt();
-        year = Nin[4..6].ToInt();
+        day = Nin.Substring(0, 2).ToInt();
+        month = Nin.Substring(2, 2).ToInt();
+        year = Nin.Substring(4, 2).ToInt();
         IsDayDnrModified = day > 40;
     }
 
