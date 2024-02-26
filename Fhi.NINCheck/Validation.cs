@@ -1,6 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-
-namespace Fhi.NINCheck;
+﻿namespace Fhi.NINCheck;
 
 /// <summary>
 ///     Extention methods for validation.
@@ -158,7 +156,7 @@ public static class Validation
     {
         if (!CheckLength(fhnr) || !CheckCharacters(fhnr))
             return false;
-        var fhNummer = fhnr[..9];
+        var fhNummer = fhnr.Substring(0, 9);
         var nr = fhNummer.ToInt();
         var harRiktigTallSerie = nr is >= 800000000 and <= 999999999;
         if (!harRiktigTallSerie)
