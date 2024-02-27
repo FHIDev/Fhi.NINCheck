@@ -160,6 +160,9 @@ internal class ValidationTests
         Assert.That(nin.ErGyldigHNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
     }
 
+#pragma warning disable NUnit1001 // The individual arguments provided by a TestCaseAttribute must match the type of the corresponding parameter of the method
+    [TestCase(null)]
+#pragma warning restore NUnit1001 // The individual arguments provided by a TestCaseAttribute must match the type of the corresponding parameter of the method
     [TestCase("97454026641")]
     [TestCase("18981388020")]
     [TestCase("18181388020")]
@@ -170,7 +173,9 @@ internal class ValidationTests
     {
         var result = nin.ErGyldigHNummer();
         TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
-        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (nin!=null)
+            Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
 
     }
 
@@ -181,6 +186,11 @@ internal class ValidationTests
         Assert.That(nin.ErGyldigFHNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
 
     }
+
+
+#pragma warning disable NUnit1001 // The individual arguments provided by a TestCaseAttribute must match the type of the corresponding parameter of the method
+    [TestCase(null)]
+#pragma warning restore NUnit1001 // The individual arguments provided by a TestCaseAttribute must match the type of the corresponding parameter of the method
     [TestCase("71212121229")]
     [TestCase("")]
     [TestCase("1898z388020")]
@@ -188,9 +198,13 @@ internal class ValidationTests
     {
         var result = nin.ErGyldigFHNummer();
         TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
-        Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (nin!= null)
+            Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
-
+    
+    
+   // [TestCase("204167553610")]
     [TestCase("199201426900")]
     [TestCase("200112345609")]
     [TestCase("201017238203")]
@@ -204,7 +218,7 @@ internal class ValidationTests
         Assert.That(ninchecker.RealYear, Is.EqualTo(year));
 
     }
-
+    
     [TestCase("71212121229")]
     [TestCase("")]
     [TestCase("1898z388020")]
@@ -227,6 +241,64 @@ internal class ValidationTests
         TestContext.WriteLine($" Dnr {c.IsDNummer}");
     }
 
+    [TestCase("17454026641","5/17/1940")] //HNr
+    [TestCase("51106297510","10/11/1962")]  // DNr
+    [TestCase("17054026641","5/17/1940")] // FNr
+    public void ThatBirthDayWorksForCorrectTypes(string nin,string expectedBirthDate)
+    {
+        var c = new NinChecker(nin);
+        Assert.That(c.Birthdate.ToDateOnly().ToString(), Is.EqualTo(expectedBirthDate));
+        Assert.That(c.HasBirthdate, Is.True);
+    }
+    
+    [TestCase("200112345609")] // Duf
+    [TestCase("81212121223")]  // Fhn
+    public void ThatBirthDayIgnoresInvalidTypes(string nin)
+    {
+        var c = new NinChecker(nin);
+        Assert.That(c.Birthdate, Is.Null);
+        Assert.That(c.HasBirthdate, Is.False);
+    }
+
+    [TestCase("17454026641", "5/17/1940")] //HNr
+    [TestCase("51106297510", "10/11/1962")]  // DNr
+    [TestCase("17054026641", "5/17/1940")] // FNr
+    public void ThatBirthDayWorksForCorrectTypesUsingExtensionmethods(string nin, string expectedBirthDate)
+    {
+        Assert.That(nin.Birthdate().ToDateOnly().ToString(), Is.EqualTo(expectedBirthDate));
+        Assert.That(nin.HasBirthdate, Is.True);
+    }
+
+    [TestCase("200112345609")] // Duf
+    [TestCase("81212121223")]  // Fhn
+    public void ThatBirthDayIgnoresInvalidTypesUsingExtensionmethods(string nin)
+    {
+        Assert.That(nin.Birthdate(), Is.Null);
+        Assert.That(nin.HasBirthdate, Is.False);
+    }
 
 
+}
+
+public static class Extensions
+{
+    public static DateOnly? ToDateOnly(this DateTimeOffset? date)
+    {
+        return date != null ? DateOnly.FromDateTime(date.Value.Date) : null;
+    }
+
+    public static DateOnly ToDateOnly(this DateTimeOffset date)
+    {
+        return DateOnly.FromDateTime(date.Date);
+    }
+
+    public static DateOnly ToDateOnly(this DateTime date)
+    {
+        return DateOnly.FromDateTime(date.Date);
+    }
+
+    public static DateOnly? ToDateOnly(this DateTime? date)
+    {
+        return date!=null ?DateOnly.FromDateTime(date.Value.Date) : null;
+    }
 }

@@ -37,13 +37,17 @@ public class NinChecker
     public bool IsValidYear => RealYear > 1854 && RealYear <= DateTime.Now.Year;
     
 
-    public bool IsDNummer => IsValidFnrDnr && IsValidDate && day > DnrDayOffset;
-    public bool IsHNummer => IsTechValid && IsValidDate && month is > HnrMonthOffset and <= HnrMonthOffset + 12;
+    public bool IsDNummer => IsValidFnrDnr && IsValidDate && !IsPotentialDufNumber && day > DnrDayOffset;
+    public bool IsHNummer => IsTechValid && IsValidDate && !IsPotentialDufNumber && month is > HnrMonthOffset and <= HnrMonthOffset + 12;
     public bool IsSyntPopNummer => IsValidFnrDnr && IsValidDate && month is > SyntPopMonthOffset and <= SyntPopMonthOffset + 12;
 
     public bool IsTenorNummer => IsValidFnrDnr && IsValidDate && month is > TenorMonthOffset and <= TenorMonthOffset + 12;
 
-    public bool IsFNummer => IsValidFnrDnr && !IsDNummer && !IsHNummer && !IsDufNumber && IsValidDate;
+    public bool IsFNummer => IsValidFnrDnr && !IsDNummer && !IsHNummer && !IsDufNumber && IsValidDate && !IsPotentialDufNumber;
+    
+    public bool HasBirthdate => IsFNummer || IsHNummer || IsDNummer;
+    
+    public DateTime? Birthdate => HasBirthdate ? new DateTime(RealYear, RealMonth, RealDay) : null;
 
     public bool IsValidDay =>
         day switch
