@@ -142,6 +142,31 @@ public static class Validation
 
         return checker.IsTenorNummer;
     }
+    
+    /// <summary>
+    /// Returns the BirthDate of the given FNr, DNr or HNr
+    /// Null if not correct type or invalid.
+    /// </summary>
+    /// <param name="nin"></param>
+    /// <returns></returns>
+    public static DateTime? Birthdate(this string nin)
+    {
+        var checker = new NinChecker(nin);
+        return checker.Birthdate;
+    }
+
+    /// <summary>
+    /// Returns whether a BirthDate of the given FNr, DNr or HNr exists.
+    /// </summary>
+    /// <param name="nin"></param>
+    /// <returns></returns>
+    public static bool HasBirthdate(this string nin)
+    {
+        var checker = new NinChecker(nin);
+        return checker.HasBirthdate;
+    }
+
+
 
     /// <summary>
     ///     Validates a given FH-nummer
@@ -223,7 +248,7 @@ public static class Validation
     {
         if (string.IsNullOrEmpty(nin) || nin.Length != length || nin.Contains(' '))
         {
-            LastFailedStep = $"{nameof(CheckLength)}: Got {nin.Length}, expected {length}";
+            LastFailedStep = $"{nameof(CheckLength)}: Got {nin?.Length}, expected {length}";
             return false;
         }
 
