@@ -1,5 +1,5 @@
 # Fhi.NINCheck
-Bibliotek for å sjekke gyldighet av Fnr, Dnr, HNr,FHN,Duf samt i test environment Tenor og SyntPop nummere.
+Bibliotek for å sjekke gyldighet av norske Fnr, Dnr, HNr,FHN,Duf samt i test environment Tenor og SyntPop nummere.
 
 
 ## Bruk
@@ -71,6 +71,40 @@ public static bool ErGyldigNin(this string nin,bool isProduction=true)
     }
 ```
 
+## Fødselsdato
+
+Man kan trekke ut fødselsdato fra et gyldig Fnr, Dnr eller Hnr.
+
+Ved bruk av extension metodene:
+
+```csharp
+   if (nin.HasBirthDate())
+   {
+       DateTime birthDate = nin.BirthDate();
+   }
+```
+
+Ved bruk av klassen:
+
+```csharp
+   var checker = new NinChecker(nin);
+   if (checker.HasBirthDate)
+   {
+       DateTime birthDate = checker.BirthDate;
+   }
+```
+
+BirthDate propertien returnerer en nullable DateTime så man kan også skrive:
+
+```csharp
+   var checker = new NinChecker(nin);
+   DateTime? birthDate = checker.BirthDate;
+   if (birthDate.HasValue)
+   {
+       // Do something
+   }
+```
+
 ## Feilinformasjon
 
 Om et nummer feiler, kan man hente ut informasjon om hvorfor det feilet.
@@ -80,3 +114,5 @@ using Fhi.NinCheck;
 
 string feilinformasjon = Validation.LastFailedStep();
 ```
+
+Denne gir feilmelding fra siste steget, så inneholder ikke nødvendigvis all feilinformasjon.
