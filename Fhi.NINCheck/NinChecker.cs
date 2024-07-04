@@ -132,7 +132,7 @@ public class NinChecker
         return year switch
         {
             <= 40 when individ < 500 => 1900 + year,
-            <= 40 when true => 2000 + year,
+            <= 39 when true => 2000 + year,
             >= 54 when individ is >= 500 and <= 749 => 1800 + year,
             _ => 1900 + year
         };
