@@ -17,6 +17,27 @@ internal class ValidationTests
         Assert.That(nin.CheckNinType(), Is.EqualTo(expected));
     }
 
+
+    [TestCase("01814099829",1940)]  // Intervallet 900-999 (Personer født mellom 1940 og 1999), Issue 24
+    [TestCase("01844098762",1940)]
+    [TestCase("03014595561", 1945)] // Intervallet 900-999 (Personer født mellom 1940 og 1999)
+    [TestCase("18076591411", 1965)]
+    [TestCase("28049064480", 1890)] // Intervallet 500-749 (Personer født mellom 1854 og 1899)
+    [TestCase("28119770779", 1897)]
+    [TestCase("07020554821", 2005)] // Intervallet 500-999 (Personer født mellom 2000 og 2039)
+    [TestCase("12121064195", 2010)]
+    [TestCase("22067510015", 1975)]  // Intervallet 000-499 (Personer født mellom 1900 og 1999)
+    [TestCase("15038512797",1985)]
+    public void Check_IsValidForIntervalsWithCorrectYear(string nin, int year)
+    {
+        Assert.That(nin.ErGyldigNin(false), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
+        var ninchecker = new NinChecker(nin);
+        Assert.That(ninchecker.RealYear, Is.EqualTo(year));
+    }
+
+
+    [TestCase("01814099829")]
+    [TestCase("01844098762")]
     [TestCase("200112345609")] // Duf
     [TestCase("68126952442")] // Dnr
     [TestCase("70090678378")]
