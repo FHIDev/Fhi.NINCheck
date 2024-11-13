@@ -13,7 +13,7 @@ internal class ValidationTests
     [TestCase("31739556891", "SyntPopTestNummer,FNummer")]
     public void CheckTypeOfNumber(string nin, string expected)
     {
-        TestContext.WriteLine($"Testing {nin}, is type : {nin.CheckNinType()}, FeilInfo {Fhi.NINCheck.Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Testing {nin}, is type : {nin.CheckNinType()}, FeilInfo {Fhi.NINCheck.Validation.LastFailedStep}");
         Assert.That(nin.CheckNinType(), Is.EqualTo(expected));
     }
 
@@ -76,7 +76,7 @@ internal class ValidationTests
     public void Check_IsValidInTestForInvalidNumbers(string nin)
     {
         var result = nin.ErGyldigNin(false);
-        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         Assert.That(result, Is.False, $"{nin.FormatWith()} skulle vært ugyldig, failed at {Validation.LastFailedStep}");
     }
 
@@ -109,7 +109,7 @@ internal class ValidationTests
     public void Is_Invalid_Tenornummer(string nin)
     {
         var result = nin.ErGyldigTenorTestNummer();
-        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
 
@@ -124,7 +124,7 @@ internal class ValidationTests
     public void Is_Invalid_SyntPopnummer(string nin)
     {
         var result = nin.ErGyldigSyntetiskTestNummer();
-        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
 
@@ -137,7 +137,7 @@ internal class ValidationTests
     public void Can_find_invalid_fnumbers(string nin)
     {
         var result = nin.ErGyldigFødselsNummer();
-        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
 
@@ -158,7 +158,7 @@ internal class ValidationTests
     public void Can_find_invalid_dnumbers(string nin)
     {
         var result = nin.ErGyldigDNummer();
-        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
 
@@ -184,7 +184,7 @@ internal class ValidationTests
     public void Can_find_invalid_hnumbers(string nin)
     {
         var result = nin.ErGyldigHNummer();
-        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (nin != null)
             Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
@@ -208,7 +208,7 @@ internal class ValidationTests
     public void Can_find_invalid_fhnumbers(string nin)
     {
         var result = nin.ErGyldigFHNummer();
-        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (nin != null)
             Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
@@ -238,7 +238,7 @@ internal class ValidationTests
     public void Can_find_invalid_dufnumbers(string nin)
     {
         var result = nin.ErGyldigDufNummer();
-        TestContext.WriteLine($"Reacted on {Validation.LastFailedStep}");
+        TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
     }
 
@@ -246,9 +246,9 @@ internal class ValidationTests
     public void CheckElementsOfNumber(string fnr)
     {
         var c = new NinChecker(fnr);
-        TestContext.WriteLine($" TechValid {c.IsTechValid}");
-        TestContext.WriteLine($" Fnr {c.IsFNummer}");
-        TestContext.WriteLine($" Dnr {c.IsDNummer}");
+        TestContext.Out.WriteLine($" TechValid {c.IsTechValid}");
+        TestContext.Out.WriteLine($" Fnr {c.IsFNummer}");
+        TestContext.Out.WriteLine($" Dnr {c.IsDNummer}");
     }
 
     [TestCaseSource(nameof(ThatBirthDayWorksForCorrectTypesInput))]
