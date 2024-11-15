@@ -8,7 +8,7 @@ public class Tests
         Assert.Multiple(() =>
         {
             Assert.That("unf".ToInt(), Is.EqualTo(0));
-            Assert.That(((string)null).ToInt(), Is.EqualTo(0));
+            Assert.That(((string)null!).ToInt(), Is.EqualTo(0));
             Assert.That("".ToInt(), Is.EqualTo(0));
             Assert.That("123 45".ToInt(), Is.EqualTo(0));
             Assert.That("12345".ToInt(), Is.EqualTo(12345));
