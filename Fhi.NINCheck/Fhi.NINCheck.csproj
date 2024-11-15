@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.4.0</Version>
-    <id>Fhi.NINCheck</id>
+    <Version>1.5.0</Version>
     <RepositoryUrl>https://github.com/folkehelseinstituttet/Fhi.NINCheck</RepositoryUrl>
     <PackageProjectUrl>https://github.com/folkehelseinstituttet/Fhi.NINCheck</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -19,13 +17,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
-
   <ItemGroup>
     <None Include="../README.md" Pack="true" PackagePath="\" />
     <None Include="..\.editorconfig" Link=".editorconfig" />
-    <None Include="images\fhi.png" Pack="True" PackagePath="\" />
-    
+    <None Include="images\fhi.png" Pack="True" PackagePath="\" />    
   </ItemGroup>
-
-
 </Project>
