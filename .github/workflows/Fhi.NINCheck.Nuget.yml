@@ -5,11 +5,9 @@ on:
     branches:
       - main
 
-
 defaults:
   run:
     shell: pwsh
-    working-directory: ./
 
 jobs:
   publish:
@@ -17,27 +15,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-
-      - name: Install dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore --verbosity normal
+          dotnet-version: 8.0.x
 
       - name: Pack
-        run: dotnet pack --configuration Release --no-build --output package 
+        run: dotnet pack --output package
 
       - name: Publish nupkg and snupkg to NuGet.org
         run: |
-          foreach($file in (Get-ChildItem package -Recurse -Include *.nupkg)) {
-              dotnet nuget push $file --api-key "${{ secrets.NUGET_ORG_FHI_PUBLISH }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-          }
-          foreach($file in (Get-ChildItem "package" -Recurse -Include *.snupkg)) {
-              dotnet nuget push $file --api-key "${{ secrets.NUGET_ORG_FHI_PUBLISH }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          foreach($file in (Get-ChildItem -Path package -Recurse -Include "*.nupkg")) {
+              Write-Host "Publishing nupkg and snupkg:: " $file.FullName
+              dotnet nuget push $file.FullName --api-key "${{ secrets.NUGET_ORG_FHI_PUBLISH }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
           }

@@ -1,6 +1,9 @@
 name: Fhi.NINCheck.CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -12,8 +15,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
+          dotnet-version: 8.0.x
 
       - name: Display dotnet version
         run: dotnet --version
@@ -22,7 +24,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore --verbosity minimal
 
       - name: Run tests
-        run: dotnet test --no-restore --verbosity normal
+        run: dotnet test --configuration Release --no-restore --verbosity normal
