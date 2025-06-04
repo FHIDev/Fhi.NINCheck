@@ -35,7 +35,7 @@ public class NinChecker
 
     public bool IsValidDate => IsValidDay && IsValidMonth && IsValidYear;
     public bool IsValidYear => RealYear > 1854 && RealYear <= DateTime.Now.Year;
-    
+
 
     public bool IsDNummer => IsValidFnrDnr && IsValidDate && !IsPotentialDufNumber && day > DnrDayOffset;
     public bool IsHNummer => IsTechValid && IsValidDate && !IsPotentialDufNumber && month is > HnrMonthOffset and <= HnrMonthOffset + 12;
@@ -44,9 +44,9 @@ public class NinChecker
     public bool IsTenorNummer => IsValidFnrDnr && IsValidDate && month is > TenorMonthOffset and <= TenorMonthOffset + 12;
 
     public bool IsFNummer => IsValidFnrDnr && !IsDNummer && !IsHNummer && !IsDufNumber && IsValidDate && !IsPotentialDufNumber;
-    
+
     public bool HasBirthdate => IsFNummer || IsHNummer || IsDNummer;
-    
+
     public DateTime? Birthdate => HasBirthdate ? new DateTime(RealYear, RealMonth, RealDay) : null;
 
     public bool IsValidDay =>
@@ -82,7 +82,7 @@ public class NinChecker
         {
             Parse();
             RealYear = FindCorrectYear();
-            
+
         }
     }
 
@@ -98,7 +98,7 @@ public class NinChecker
     {
         if (string.IsNullOrEmpty(Nin) || (Nin.Length != 11 && Nin.Length != 12) || Nin.Contains(' '))
         {
-            ErrorMessage = "Nin must be 11 or 12 digits long with no spaces";
+            ErrorMessage = "Nin må være 11 eller 12 tegn uten mellomrom";
             IsTechValid = false;
             return false;
         }
@@ -113,14 +113,14 @@ public class NinChecker
         }
         catch (FormatException)
         {
-            ErrorMessage = $"Nin contains invalid characters";
+            ErrorMessage = $"Nin inneholder ugyldige tegn";
             IsTechValid = false;
             return false;
         }
         return true;
     }
 
-    
+
 
     private int FindCorrectYear()
     {
@@ -205,7 +205,7 @@ public class NinChecker
 
         void SetError()
         {
-            ErrorMessage = $"Kontrollsiffer is not valid";
+            ErrorMessage = $"Kontrollsiffer er ikke gyldig";
         }
     }
 }
