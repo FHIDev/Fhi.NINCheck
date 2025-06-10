@@ -2,22 +2,22 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>1.6.0</Version>
-	<IsPackable>true</IsPackable>
-	<RepositoryUrl>https://github.com/FHIDev/Fhi.NINCheck</RepositoryUrl>
+    <Version>1.7.0</Version>
+    <IsPackable>true</IsPackable>
+    <RepositoryUrl>https://github.com/FHIDev/Fhi.NINCheck</RepositoryUrl>
     <Authors>Folkehelseinstituttet (FHI)</Authors>
-	<Copyright>Copyright 2022-2025 Folkehelseinstituttet (FHI)</Copyright>
+    <Copyright>Copyright 2022-2025 Folkehelseinstituttet (FHI)</Copyright>
     <PackageProjectUrl>https://www.nuget.org/packages/Fhi.NINCheck</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	<PackageCopyright>Copyright 2022-2025 Folkehelseinstituttet (FHI)</PackageCopyright>
+    <PackageCopyright>Copyright 2022-2025 Folkehelseinstituttet (FHI)</PackageCopyright>
     <PackageIcon>fhi.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-	<PackageDescription>
+    <PackageDescription>
       Utility to check NINs
-	</PackageDescription>	  
+    </PackageDescription>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	<Tags>NIN check, validation</Tags>
+    <Tags>NIN check, validation</Tags>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../README.md" Pack="true" PackagePath="/" />
