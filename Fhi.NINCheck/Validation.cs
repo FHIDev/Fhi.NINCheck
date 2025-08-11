@@ -31,11 +31,12 @@ public static class Validation
             || nin.ErGyldigHNummer()
             || nin.ErGyldigFHNummer()
             )
+        {
             return true;
+        }
 
         if (isProduction)
         {
-            LastFailedStep = "Ikke gyldig fødselsnummer";
             return false;
         }
 
