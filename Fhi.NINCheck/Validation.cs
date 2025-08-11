@@ -16,24 +16,32 @@ public static class Validation
     /// <param name="nin"></param>
     /// <param name="isProduction">Default verdi true</param>
     /// <returns></returns>
-    public static bool ErGyldigNin(this string nin,bool isProduction=true)
+    public static bool ErGyldigNin(this string nin, bool isProduction = true)
     {
-        if (isProduction)
+        if (isProduction
+            && (nin.ErGyldigSyntetiskTestNummer() || nin.ErGyldigTenorTestNummer()))
         {
-            if (nin.ErGyldigSyntetiskTestNummer() || nin.ErGyldigTenorTestNummer())
-                return false;
+            LastFailedStep = "Syntetiske testnummer er ikke gyldig i produksjon.";
+            return false;
         }
-        if (nin.ErGyldigFNummer() 
-            || nin.ErGyldigDNummer() 
+
+        if (nin.ErGyldigFNummer()
+            || nin.ErGyldigDNummer()
             || nin.ErGyldigDufNummer()
             || nin.ErGyldigHNummer()
             || nin.ErGyldigFHNummer()
             )
             return true;
-        if (isProduction) return false;
+
+        if (isProduction)
+        {
+            LastFailedStep = "Ikke gyldig fødselsnummer";
+            return false;
+        }
+
         return nin.ErGyldigSyntetiskTestNummer() || nin.ErGyldigTenorTestNummer();
     }
-    
+
     /// <summary>
     ///     Validates a given fødselsnummer.
     /// </summary>
@@ -58,9 +66,6 @@ public static class Validation
         return checker.IsFNummer;
     }
 
-
-   
-    private const int DnrDayOffset = 40;
 
     /// <summary>
     ///     Validates a given d-nummer.
@@ -142,7 +147,7 @@ public static class Validation
 
         return checker.IsTenorNummer;
     }
-    
+
     /// <summary>
     /// Returns the BirthDate of the given FNr, DNr or HNr
     /// Null if not correct type or invalid.
@@ -165,8 +170,6 @@ public static class Validation
         var checker = new NinChecker(nin);
         return checker.HasBirthdate;
     }
-
-
 
     /// <summary>
     ///     Validates a given FH-nummer
@@ -192,7 +195,6 @@ public static class Validation
         return CheckKontrollSiffre(fhnr);
     }
 
-
     /// <summary>
     /// Validates a given DUF-nummer
     /// Et Duf-nummer skal bestå av et 12-siffret tall.
@@ -215,8 +217,6 @@ public static class Validation
         return checker.IsDufNumber;
     }
 
-    private static int ExtractRawMonth(string nin) => int.Parse(nin.Substring(2, 2));
-
     /// <summary>
     /// Only use this when the month is not the be checked
     /// </summary>
@@ -224,13 +224,13 @@ public static class Validation
     {
         return rawMonth switch
         {
-            >= 65 and <80 => rawMonth - 65,
+            >= 65 and < 80 => rawMonth - 65,
             >= 80 => rawMonth - 80,
             _ => rawMonth
         };
     }
 
-   private static bool CheckCharacters(string hnr)
+    private static bool CheckCharacters(string hnr)
     {
         try
         {
@@ -244,7 +244,7 @@ public static class Validation
         return true;
     }
 
-    private static bool CheckLength(string nin,int length=11)
+    private static bool CheckLength(string nin, int length = 11)
     {
         if (string.IsNullOrEmpty(nin) || nin.Length != length || nin.Contains(' '))
         {
@@ -254,7 +254,7 @@ public static class Validation
 
         return true;
     }
-    
+
     private static bool CheckKontrollSiffre(string fnr)
     {
         LastFailedStep = nameof(CheckKontrollSiffre);
@@ -302,7 +302,6 @@ public static class Validation
         return isk1 && isk2;
     }
 
-
     /// <summary>
     /// Returnerer hva slags nummer det kan være
     /// </summary>
@@ -325,7 +324,7 @@ public static class Validation
         var testtype = nin.ErGyldigTenorTestNummer() ? "TenorTestNummer"
             : nin.ErGyldigSyntetiskTestNummer() ? "SyntPopTestNummer"
             : "";
-            
+
         if (basetype == "" && testtype == "")
             return "Ukjent";
         if (testtype != "" && basetype == "")
@@ -333,5 +332,4 @@ public static class Validation
         return testtype == "" ? basetype : $"{testtype},{basetype}";
 
     }
-
 }
