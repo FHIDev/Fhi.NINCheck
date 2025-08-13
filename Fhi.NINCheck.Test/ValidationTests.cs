@@ -79,7 +79,7 @@ internal class ValidationTests
     public void Check_IsInvalidAndUknownInProduction(string nin)
     {
         Assert.That(Validation.ErGyldigNin(nin, isProduction: true), Is.EqualTo(false));
-        Assert.That(Validation.LastFailedStep, Is.EqualTo("Ukjent NIN eller NHN-ID."));
+        Assert.That(Validation.LastFailedStep, Is.EqualTo("Ukjent NIN."));
     }
 
     [TestCase("1")]
