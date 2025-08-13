@@ -120,8 +120,6 @@ public class NinChecker
         return true;
     }
 
-
-
     private int FindCorrectYear()
     {
         if (IsPotentialDufNumber)
@@ -140,8 +138,9 @@ public class NinChecker
 
     private bool DufYearCheck()
     {
-        var dufyear = Nin.Substring(0, 4).ToInt();
-        bool goodYear = dufyear >= 1854 && dufyear <= DateTime.Now.Year;
+        var dufyear = Nin.Substring(0, 4);
+        var dufyearAsInt = dufyear.ToInt();
+        var goodYear = dufyearAsInt >= 1854 && dufyearAsInt <= DateTime.Now.Year;
         if (!goodYear)
         {
             ErrorMessage = $"Ikke sannsynlig årstall: {dufyear}";

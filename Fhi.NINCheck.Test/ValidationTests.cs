@@ -64,6 +64,14 @@ internal class ValidationTests
         Assert.That(nin.ErGyldigNin(true), Is.EqualTo(expected), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
     }
 
+    [TestCase("31739556891")] // Syntpop
+    [TestCase("28894698995")] // Tenor
+    public void Check_IsInvalidInProduction(string nin)
+    {
+        Assert.That(Validation.ErGyldigNin(nin, isProduction: true), Is.EqualTo(false));
+        Assert.That(Validation.LastFailedStep, Is.EqualTo("Syntetiske testnummer er ikke gyldig i produksjon."));
+    }
+
     [TestCase("130112345609")] // Duf
     [TestCase("68156952442")] // Dnr
     [TestCase("90090678378")]
