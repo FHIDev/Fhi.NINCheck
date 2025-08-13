@@ -239,7 +239,7 @@ public static class Validation
         }
         catch (FormatException)
         {
-            LastFailedStep = nameof(CheckCharacters);
+            LastFailedStep = "NIN eller NHN-ID kan kun inneholde siffer.";
             return false;
         }
         return true;
@@ -249,7 +249,7 @@ public static class Validation
     {
         if (string.IsNullOrEmpty(nin) || nin.Length != length || nin.Contains(' '))
         {
-            LastFailedStep = $"{nameof(CheckLength)}: Got {nin?.Length}, expected {length}";
+            LastFailedStep = "Ukjent NIN eller NHN-ID.";
             return false;
         }
 

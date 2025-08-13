@@ -98,7 +98,7 @@ public class NinChecker
     {
         if (string.IsNullOrEmpty(Nin) || (Nin.Length != 11 && Nin.Length != 12) || Nin.Contains(' '))
         {
-            ErrorMessage = "Nin må være 11 eller 12 tegn uten mellomrom";
+            ErrorMessage = "Nin må være 11 eller 12 siffer uten mellomrom.";
             IsTechValid = false;
             return false;
         }
@@ -113,7 +113,7 @@ public class NinChecker
         }
         catch (FormatException)
         {
-            ErrorMessage = $"Nin inneholder ugyldige tegn";
+            ErrorMessage = $"Nin inneholder ugyldige tegn.";
             IsTechValid = false;
             return false;
         }

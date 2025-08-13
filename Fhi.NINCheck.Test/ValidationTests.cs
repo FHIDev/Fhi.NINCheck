@@ -4,6 +4,7 @@ internal class ValidationTests
 {
     [TestCase("55076500565", "Ukjent")]
     [TestCase("12345678901", "Ukjent")]
+    [TestCase("037422972082", "Ukjent")]
     [TestCase("01112835470", "FNummer")]
     [TestCase("200112345609", "DufNummer")]
     [TestCase("81212121223", "FHNummer")]
@@ -70,6 +71,23 @@ internal class ValidationTests
     {
         Assert.That(Validation.ErGyldigNin(nin, isProduction: true), Is.EqualTo(false));
         Assert.That(Validation.LastFailedStep, Is.EqualTo("Syntetiske testnummer er ikke gyldig i produksjon."));
+    }
+
+    [TestCase("037422972082")]
+    [TestCase("1")]
+    [TestCase("111111111111111111111111111")]
+    public void Check_IsInvalidAndUknownInProduction(string nin)
+    {
+        Assert.That(Validation.ErGyldigNin(nin, isProduction: true), Is.EqualTo(false));
+        Assert.That(Validation.LastFailedStep, Is.EqualTo("Ukjent NIN eller NHN-ID."));
+    }
+
+    [TestCase("1")]
+    [TestCase("111111111111111111111111111")]
+    public void Check_IsInvalidInTest(string nin)
+    {
+        Assert.That(Validation.ErGyldigNin(nin, isProduction: false), Is.EqualTo(false));
+        Assert.That(Validation.LastFailedStep, Is.EqualTo("Nin må være 11 eller 12 siffer uten mellomrom."));
     }
 
     [TestCase("130112345609")] // Duf
@@ -248,6 +266,13 @@ internal class ValidationTests
         var result = nin.ErGyldigDufNummer();
         TestContext.Out.WriteLine($"Reacted on {Validation.LastFailedStep}");
         Assert.That(result, Is.False, $"{nin.FormatWith()} skal ikke være gyldig, failed at {Validation.LastFailedStep}");
+    }
+
+    [TestCase("037422972082")]
+    public void Can_find_invalid_dufnumbers_and_returns_norwegian_validation_message(string nin)
+    {
+        var result = nin.ErGyldigDufNummer();
+        Assert.That(Validation.LastFailedStep, Is.EqualTo("Ikke sannsynlig årstall: 0374"));
     }
 
     [TestCase("03923248608")]
