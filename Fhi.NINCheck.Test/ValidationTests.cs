@@ -28,6 +28,14 @@ internal class ValidationTests
     [TestCase("12121064195", 2010)]
     [TestCase("22067510015", 1975)]  // Intervallet 000-499 (Personer født mellom 1900 og 1999)
     [TestCase("15038512797", 1985)]
+    [TestCase("41814061033", 1940)] // D-nummer, Skatteetaten 2021 table
+    [TestCase("41814065640", 1940)]
+    [TestCase("41814075603", 1940)]
+    [TestCase("41810021827", 2000)]
+    [TestCase("41810025091", 2000)]
+    [TestCase("41810034422", 2000)]
+    [TestCase("41012010042", 1920)] // D-nummer, individ 000-199
+    [TestCase("41019059918", 1890)] // D-nummer, individ 500-599
     public void Check_IsValidForIntervalsWithCorrectYear(string nin, int year)
     {
         Assert.That(nin.ErGyldigNin(false), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");
@@ -172,6 +180,8 @@ internal class ValidationTests
     [TestCase("68126952442")]
     [TestCase("70090678378")]
     [TestCase("67016464373")]
+    [TestCase("41043093795")] // 2024: individ 937 with year 30 can be 1930
+    [TestCase("41693093714")] // same, SyntPop
     public void Can_validate_a_dnummer(string nin)
     {
         Assert.That(nin.ErGyldigDNummer(), $"{nin.FormatWith()} var ugyldig, failed at {Validation.LastFailedStep}");

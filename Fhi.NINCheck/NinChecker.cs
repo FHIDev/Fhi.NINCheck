@@ -47,7 +47,10 @@ public class NinChecker
 
     public bool HasBirthdate => IsFNummer || IsHNummer || IsDNummer;
 
-    public DateTime? Birthdate => HasBirthdate ? new DateTime(RealYear, RealMonth, RealDay) : null;
+    /// <summary>
+    /// Estimated from the number. For d-numbers and numbers issued from 2032, Folkeregisteret is the only reliable source.
+    /// </summary>
+    public DateTime? Birthdate =>HasBirthdate ? new DateTime(RealYear, RealMonth, RealDay) : null;
 
     public bool IsValidDay =>
         day switch
@@ -127,14 +130,31 @@ public class NinChecker
             return DufYearCheck() ? Nin.Substring(0, 4).ToInt() : 0;
         }
         var individ = Nin.Substring(6, 3).ToInt();
-        return year switch
+        var realYear = year switch
         {
+            _ when IsDayDnrModified => DNummerYear(individ),
             <= 40 when individ < 500 => 1900 + year,
             <= 39 when true => 2000 + year,
             >= 54 when individ is >= 500 and <= 749 => 1800 + year,
             _ => 1900 + year
         };
+        // Failsafe: never reject as future. Covers literal FOR-2024-02-01-161, synthetic numbers and pre-2021 d-numbers
+        if (IsDayDnrModified && realYear > DateTime.Now.Year)
+        {
+            return realYear - 100;
+        }
+        return realYear;
     }
+
+    // Skatteetaten 2021: d-nummer individ ranges per birth period
+    private int DNummerYear(int individ) =>
+        individ switch
+        {
+            < 200 => 1900 + year,
+            _ when year <= 39 => 2000 + year,
+            >= 500 and <= 599 when year >= 58 => 1800 + year,
+            _ => 1900 + year
+        };
 
     private bool DufYearCheck()
     {

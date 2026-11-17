@@ -153,6 +153,9 @@ public static class Validation
     /// Returns the BirthDate of the given FNr, DNr or HNr
     /// Null if not correct type or invalid.
     /// </summary>
+    /// <remarks>
+    /// Estimated from the number. For d-numbers and numbers issued from 2032, Folkeregisteret is the only reliable source.
+    /// </remarks>
     /// <param name="nin"></param>
     /// <returns></returns>
     public static DateTime? Birthdate(this string nin)
