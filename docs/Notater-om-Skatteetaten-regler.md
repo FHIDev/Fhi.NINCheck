@@ -1,4 +1,4 @@
-# Skatteetatens regler for fødselsnummer og d-nummer
+# Notater om Skatteetatens regler for fødselsnummer og d-nummer
 
 Oppsummering av de nasjonale reglene fra Skatteetaten (Folkeregisteret) for oppbygging og validering av fødselsnummer og d-nummer, og hva de betyr for Fhi.NINCheck.
 
@@ -75,7 +75,14 @@ Skatteetaten: «Konsumenter som benytter individnummeret til å utlede korrekt f
 
 Oppbyggingen (dag + 40) og kontrollsifrene er ikke endret.
 
-Tabellen over ble erstattet av endringen i 2024.
+Spørsmål og svar hos Skatteetaten (hentet 2026-11-16) viser samme tabell, og sier at endringen kom i konsumenttestmiljøet 20.10.2021. Testpersoner med d-nummer fra utvidelsen. I testmiljøene er måned + 80, det er det ikke i produksjon:
+
+| Født | D-nummer                                    |
+|------|---------------------------------------------|
+| 1940 | `41814061033`, `41814065640`, `41814075603` |
+| 2000 | `41810021827`, `41810025091`, `41810034422` |
+
+Tabellen gjelder fortsatt etter vår tolkning. Se 2024-forskriften under.
 
 ## D-nummer: hele individnummerserien (2024)
 
@@ -83,36 +90,89 @@ Forskrift om endring i folkeregisterforskriften (FOR-2024-02-01-161), fastsatt a
 
 > «Ved tildeling av d-nummer anvendes individsiffer fra hele nummerserien 000–999.»
 
-Konsekvenser:
+Endringen har ingen merknader. Teksten kan leses på to måter:
 
-- For d-numre tildelt fra 1.2.2024 sier individnummeret ingenting om århundre.
-- Validering av d-nummer skal ikke sjekke individnummer mot fødselsår.
-- Fødselsåret i et d-nummer kan være 18xx, 19xx eller 20xx. Det korrekte året finnes bare i Folkeregisteret.
+1. Alle individnumre kan brukes for alle fødselsår, så århundret kan ikke utledes fra nummeret.
+2. Endringen gir 2021-tabellen rettslig grunnlag. Tabellen bruker allerede hele serien 000–999.
 
-Eksempel: `41693093714` er et SyntPop d-nummer (dag 41 = 1, måned 69 = april, år 30, individnummer 937). Kontrollsifrene stemmer. Etter reglene for fødselsnummer gir 937 med år 30 året 2030, men etter 2024-regelen kan personen like gjerne være født 1930.
+Vår tolkning er 2, men den er ikke bekreftet av Skatteetaten (spørsmål sendt 2026-11-16, ikke besvart). Grunner:
+
+- Spørsmål og svar viser fortsatt 2021-tabellen og ber konsumenter følge den.
+- Skatteetaten varslet 2021-endringen flere ganger, men varslet ingenting om d-nummer i 2024.
+- For 2032 sier Skatteetaten uttrykkelig at individnummeret ikke lenger angir århundre. Noe tilsvarende er ikke sagt for d-nummer før 2032.
+
+Eksempel: `41693093714` er et SyntPop d-nummer (dag 41 = 1, måned 69 = april, år 30, individnummer 937), meldt inn som hendelse fordi det ble avvist. Kontrollsifrene stemmer. Etter 2021-tabellen gir 937 med år 30 året 2030, altså i fremtiden. Etter tolkning 1 kan personen være født 1930.
 
 Tidligere regler for d-nummer (Folkeregisterhåndboken § 2-2, ID-2-2.006, før 2021): 000–499 i synkende rekkefølge for personer født før 1.1.2000, og 500–999 i synkende rekkefølge for personer født etter 1.1.2000.
 
 ## Konsekvenser for Fhi.NINCheck
 
 1. K1 fra 2032: `NinChecker.cs` og `Validation.cs` godtar bare `k1 = 11 - (sum % 11)`. Numre som tildeles fra 1.1.2032 med ny K1 blir avvist som ugyldige.
-2. Århundre for d-nummer: `FindCorrectYear()` i `NinChecker.cs` bruker århundretabellen for fødselsnummer også på d-numre. Det er feil for d-numre tildelt etter 16.11.2021, og helt uten grunnlag etter 1.2.2024.
-   - `Birthdate` kan gi feil århundre. Eksempel: født 2005 med individnummer 300 gir 1905.
-   - Gyldige d-numre blir avvist når tabellen gir et år i fremtiden. Eksempel: `41693093714` gir 2030, og `IsValidYear` feiler. Personen kan være født 1930.
-   - Riktig oppførsel: godta et d-nummer når datoen er gyldig i minst ett mulig århundre og ikke ligger i fremtiden. `Birthdate` for d-nummer kan ikke avgjøres sikkert fra nummeret.
+2. Århundre for d-nummer: `FindCorrectYear()` i `NinChecker.cs` bruker 2021-tabellen for d-numre.
+   - Gir tabellen et år i fremtiden, trekkes 100 år fra, så nummeret ikke avvises. Det dekker tolkning 1. Etter tolkning 2 finnes ikke slike numre i produksjon. `41693093714` gir derfor 1930.
+   - D-numre tildelt før 16.11.2021 til personer født 1900–1939 med individnummer 200–499 får 20xx, så lenge 20xx ikke ligger i fremtiden. Det kan ikke skilles fra nummeret. D-numre inaktiveres fem år etter tildeling (§ 2-2-2), så disse er i hovedsak inaktive fra 16.11.2026.
+
+   Sikringen (100 år tilbake) slår bare inn for år 00–39 med individnummer 200 eller høyere, når 20xx ligger i fremtiden. I 2026 gjelder det år 27–39:
+
+   | Numre                                                          | Uten sikringen     | Med sikringen        |
+   |----------------------------------------------------------------|--------------------|----------------------|
+   | Reelle d-numre etter tolkning 2 (2021-tabellen gjelder)        | Finnes ikke        | Ingen effekt         |
+   | Reelle d-numre etter tolkning 1 (alle individnumre, alle år)   | Avvist             | Godtatt som 19xx     |
+   | SyntPop-hendelsen `41693093714`                                | Avvist (2030)      | Godtatt som 1930     |
+   | D-numre fra før 2021, født 1927–1939, individnummer 200–499    | Avvist (2027–2039) | Riktig, 19xx         |
+
+   Ulempen er at resultatet avhenger av året i dag. År 27 med individnummer 300 gir 1927 i 2026 og 2027 fra 2027.
 3. Århundre fra 2032: individnummeret angir ikke lenger århundre for noen numre. `Birthdate` kan da ikke utledes sikkert fra nummeret.
+4. Anbefaling: `Birthdate` og `RealYear` er estimert fra nummeret. For d-nummer og numre tildelt fra 2032 er Folkeregisteret eneste sikre kilde. For d-nummer kan også dag og måned avvike fra reell fødselsdato (Spørsmål og svar: «færre personer vil få avvikende fødselsdato i D-nummeret med reell fødselsdato»).
 
 ## Ikke dekket
 
 - Syntetiske numre (Tenor og SyntPop). Skatteetaten sier bare at syntetiske numre er bygget opp annerledes enn reelle numre.
 - H-nummer, FH-nummer og DUF-nummer. Disse reglene kommer ikke fra Skatteetaten.
-- Forskriftsteksten på Lovdata og Skatteetatens kildekode er ikke lest direkte.
+- Skatteetatens kildekode er ikke lest direkte. Ordlyden i § 2-2-2 før 2024 er ikke funnet.
+
+## Svar fra Skatteetaten etter spørsmål fra Peter Holmes
+
+### Spørsmål om forskrifteendringen, 19.11.2026
+
+>Folkeregisterforskriften § 2-2-2 første ledd lyder etter endringen 1.2.2024: «Ved tildeling av d-nummer anvendes individsiffer fra hele nummerserien 000–999.» På Spørsmål og svar (Utvidelse av D-nummerserien) står fortsatt tabellen fra 2021, der hvert individnummer er knyttet til en periode for fødselsår (for eksempel 200–499 for 1900–1939 og 2000–2039, og 600–999 for 1940–2039).
+>
+>Følger tildelingen av d-nummer fortsatt tabellen fra 2021, slik at fødselsåret kan utledes fra individnummer og år i nummeret?
+>
+>Eller kan alle individnumre 000–999 nå brukes for alle fødselsår, slik at århundret ikke kan utledes fra nummeret?
+>Hvis svaret er 2: gjelder det bare d-numre tildelt fra 1.2.2024, eller alle?
+>
+>Eksempel: kan et d-nummer med år 30 og individnummer 937 tilhøre en person født i 1930?”
+
+### Svar ankommet 20.11.2026
+
+Til Peter Holmes (Ekstern - FHI)  [12:08 PM]
+
+Jeg har avklart med både våre jurister og med våre utviklere. Det er ikke unaturlig at forskriftsendringen kommer en stund etter at endringen er implementert. Forskriftsendringen 1.2.24, refererer seg til endringen som ble implementert i registeret i høsten 21.
+Folkeregisterforskriften § 2-2-2 første ledd lyder etter endringen 1.2.2024: «Ved tildeling av d-nummer anvendes individsiffer fra hele nummerserien 000–999.» På Spørsmål og svar (Utvidelse av D-nummerserien) står fortsatt tabellen fra 2021, der hvert individnummer er knyttet til en periode for fødselsår .
+
+> Følger tildelingen av d-nummer fortsatt tabellen fra 2021, slik at fødselsåret kan utledes fra individnummer og år i nummeret? 
+
+Ja, men vi anbefaler å hente fødselsår fra fødselsdato-feltet i folkeregisteret.
+
+>Eller kan alle individnumre 000–999 nå brukes for alle fødselsår, slik at århundret ikke kan utledes fra nummeret? 
+
+Nei, det er tabellen som gjelder for tildeling av nye d-nummer, men vi anbefaler å hente fødselsår fra fødselsdato-feltet i folkeregisteret.
+FødtIndividnummer1858-1899500-5991900-193900-0991940-1999000-499, 600-9992000-2039100-999
+
+> Hvis svaret er 2: gjelder det bare d-numre tildelt fra 1.2.2024, eller alle? 
+
+Det for nye tildelinger fra det ble produksjonssatt høsten 2021.
+
+Eksempel: kan et d-nummer med år 30 og individnummer 937 tilhøre en person født i 1930?” En person som er født i 1930 vil ha individnummer i serien 000-999, og vil ha dd.mm.1930 i fødselsdato. Derfor bør du hent fødselsår fra fødselsdato-feltet.
 
 ## Kilder
 
 - [Nytt fødselsnummer fra 2032 – teknisk dokumentasjon](https://skatteetaten.github.io/folkeregisteret-api-dokumentasjon/nytt-fodselsnummer-fra-2032/)
+- [Folkeregisteret API-dokumentasjon – Spørsmål og svar](https://skatteetaten.github.io/folkeregisteret-api-dokumentasjon/sporsmal-og-svar/) (Utvidelse av D-nummerserien)
 - [Folkeregisteret API-dokumentasjon – Nyheter](https://skatteetaten.github.io/folkeregisteret-api-dokumentasjon/nyheter/) (Utvidelse av D-nummerserien: 24.06.2021, 09.08.2021 og 17.09.2021)
 - [FOR-2024-02-01-161 Forskrift om endring i folkeregisterforskriften](https://lovdata.no/dokument/LTI/forskrift/2024-02-01-161)
+- [Folkeregisterforskriften kapittel 2](https://lovdata.no/dokument/SF/forskrift/2017-07-14-1201/KAPITTEL_2)
 - [Folkeregisterhåndboken § 2-2, ID-2-2.006](https://www.skatteetaten.no/rettskilder/type/handboker/folkeregisterhandboken/gjeldende/kapittel2-registreringspliktige-personer-identifikasjonsnummer/ID-2-2.001/ID-2-2.006/)
 - [Validering av fødselsnummer og d-nummer](https://www.skatteetaten.no/deling/folkeregisteret/pid/validering/)
 - [Nye fødselsnummer og d-nummer fra 2032](https://www.skatteetaten.no/deling/opplysninger/folkeregisteropplysninger/pid/)
