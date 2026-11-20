@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Solution Items/docs/">
+    <File Path="docs/Skatteetaten-regler.md" />
+  </Folder>
+  <Folder Name="/Solution Items/github/workflows/">
+    <File Path=".github/workflows/Fhi.NINCheck.CI.yml" />
+    <File Path=".github/workflows/Fhi.NINCheck.Nuget.yml" />
+  </Folder>
+  <Project Path="Fhi.NINCheck.Test/Fhi.NINCheck.Test.csproj" />
+  <Project Path="Fhi.NINCheck/Fhi.NINCheck.csproj" />
+</Solution>
